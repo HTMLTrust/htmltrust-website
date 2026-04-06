@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build Site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: "latest"
+          extended: true
+
+      - name: Build
+        run: hugo --minify
+
+      - name: Verify signed-sections
+        run: |
+          count=$(grep -rl 'signed-section content-hash' public/ | wc -l)
+          echo "Found $count pages with signed-section elements"
+          if [ "$count" -lt 4 ]; then
+            echo "ERROR: Expected at least 4 signed pages"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: website
+          path: public/
+
+      - name: Deploy to Cloudflare Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy public --project-name=htmltrust-website
