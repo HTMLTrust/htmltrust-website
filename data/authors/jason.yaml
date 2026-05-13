@@ -1,0 +1,29 @@
+schema: hugoblox/author/v1
+slug: jason
+is_owner: true
+external_url: https://www.jason-grey.com
+name:
+  display: Jason Grey
+  given: Jason
+  family: Grey
+role: Author of the HTMLTrust spec
+bio: |
+  Jason has been building for the web since the early 1990s, with decades of work
+  across digital and interactive media. Since the early 2000s he has worked on AI,
+  search, generated content, and the semantic web. Recent work includes running
+  jobs across Common Crawl's entire 10PB corpus and building search-and-context
+  infrastructure at Kagi — domains where the trustworthiness of web content is a
+  daily, practical concern. HTMLTrust is a response to that gap.
+links:
+  - icon: globe-alt
+    url: https://www.jason-grey.com
+    label: jason-grey.com
+  - icon: brands/linkedin
+    url: https://www.linkedin.com/in/jasongrey/
+    label: LinkedIn
+  - icon: at-symbol
+    url: mailto:jason@jason-grey.com
+    label: Email
+  - icon: brands/github
+    url: https://github.com/HTMLTrust
+    label: GitHub

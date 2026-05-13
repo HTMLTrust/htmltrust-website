@@ -1,0 +1,28 @@
+main:
+  - name: Home
+    url: /
+    weight: 10
+  - name: Spec
+    url: /spec/
+    weight: 20
+  - name: Architecture
+    url: /architecture/
+    weight: 30
+  - name: Implementation
+    url: /implementation/
+    weight: 40
+  - name: Use Cases
+    url: /use-cases/
+    weight: 50
+  - name: FAQ
+    url: /faq/
+    weight: 60
+  - name: Blog
+    url: /blog/
+    weight: 70
+
+sidebar:
+  - identifier: github
+    name: "GitHub ↗"
+    url: "https://github.com/HTMLTrust"
+    weight: 1

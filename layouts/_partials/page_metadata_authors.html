@@ -1,0 +1,36 @@
+{{/*
+  Author byline — overrides Hugo Blox default to honor an optional
+  `external_url` field on the author data file. When set, the author's
+  name in the byline links externally instead of to /authors/<slug>/.
+*/}}
+
+{{- $authors := .Params.authors -}}
+
+{{ if $authors }}
+  {{- if not (reflect.IsSlice $authors) -}}
+    {{- $authors = slice $authors -}}
+  {{- end -}}
+
+  {{ range $index, $raw := $authors }}
+    {{- $slug := $raw | urlize -}}
+    {{- $profile := partial "functions/get_author_profile" (dict "slug" $slug "title" $raw) -}}
+    {{- $termPage := site.GetPage (printf "/authors/%s" $slug) -}}
+    {{- $display := $profile.title | default $raw -}}
+
+    {{- /* Raw author data — look up external_url, if present */ -}}
+    {{- $rawData := index site.Data.authors $slug -}}
+    {{- $externalUrl := "" -}}
+    {{- with $rawData -}}{{- $externalUrl = .external_url | default "" -}}{{- end -}}
+
+    {{- if gt $index 0 }}, {{ end -}}
+    <span>
+      {{- if $externalUrl -}}
+        <a href="{{ $externalUrl }}" rel="author noopener" target="_blank">{{ $display }}</a>
+      {{- else if $termPage -}}
+        <a href="{{ $termPage.RelPermalink }}">{{ $display }}</a>
+      {{- else -}}
+        {{ $display }}
+      {{- end -}}
+    </span>
+  {{- end -}}
+{{- end -}}

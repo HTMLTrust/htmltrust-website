@@ -8,58 +8,44 @@ on:
 
 jobs:
   build:
-    name: Build and sign
+    name: Build Site
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
-          hugo-version: "latest"
+          hugo-version: "0.161.1"
           extended: true
 
       - name: Setup Go
+        # Required by Hugo Modules to fetch the Hugo Blox theme on first build.
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: "1.22"
 
-      - name: Build
-        run: hugo --minify
+      - name: Setup Node.js
+        # Hugo Blox needs preact + tailwindcss + pagefind at build time.
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
-      - name: Verify placeholder signed-sections exist
+      - name: Install npm deps
+        run: npm install
+
+      - name: Build site
+        # node_modules/.bin must be on PATH so the tailwindcss CLI resolves.
         run: |
-          count=$(grep -rl '<signed-section' public/ | wc -l)
-          echo "Found $count pages with <signed-section> placeholders"
-          if [ "$count" -lt 4 ]; then
-            echo "ERROR: Expected at least 4 pages with signed-section placeholders"
-            exit 1
-          fi
+          export PATH="$PWD/node_modules/.bin:$PATH"
+          hugo --minify
 
-      - name: Install htmltrust-sign
-        run: go install github.com/HTMLTrust/htmltrust-hugo/cmd/htmltrust-sign@latest
+      - name: Build search index
+        run: npx pagefind --site public
 
-      - name: Sign content
-        env:
-          HTMLTRUST_SIGNING_KEY: ${{ secrets.HTMLTRUST_SIGNING_KEY }}
-        run: |
-          htmltrust-sign --dir public --keyid did:web:jason-grey.com --domain www.htmltrust.org -v
-
-      - name: Verify signed sections are complete
-        run: |
-          if grep -rq 'data-htmltrust-placeholder' public/; then
-            echo "ERROR: placeholder markers remain - signer did not run on all sections"
-            exit 1
-          fi
-          for f in $(grep -rl '<signed-section' public/); do
-            if ! grep -q 'content-hash="sha256:' "$f"; then echo "MISSING content-hash in $f"; exit 1; fi
-            if ! grep -q 'signature="' "$f"; then echo "MISSING signature in $f"; exit 1; fi
-            if ! grep -q 'keyid="did:web:' "$f"; then echo "MISSING keyid in $f"; exit 1; fi
-            if ! grep -q 'algorithm="ed25519"' "$f"; then echo "MISSING algorithm in $f"; exit 1; fi
-          done
-          echo "OK: all signed-section elements carry the four spec-required attributes"
+      # TODO(htmltrust): re-wire signed-section verification once the signing
+      # pipeline is integrated with the Hugo Blox build. The previous site
+      # signed its own pages at the layout level; the new site does not yet.
 
       - uses: actions/upload-artifact@v4
         with:
@@ -71,6 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    continue-on-error: true
     steps:
       - uses: actions/download-artifact@v4
         with:
