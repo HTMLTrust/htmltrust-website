@@ -43,9 +43,48 @@ jobs:
       - name: Build search index
         run: npx pagefind --site public
 
-      # TODO(htmltrust): re-wire signed-section verification once the signing
-      # pipeline is integrated with the Hugo Blox build. The previous site
-      # signed its own pages at the layout level; the new site does not yet.
+      - name: Verify placeholder signed-sections exist
+        # Hugo emits <signed-section> placeholders with data-htmltrust-placeholder
+        # markers on every page that opts in via `htmltrust.sign: true` front-matter.
+        # The signer (next step) will replace them with real content-hash / signature
+        # / keyid / algorithm attributes. Six content pages currently opt in:
+        # /spec/, /architecture/, /implementation/, /use-cases/, /faq/,
+        # /blog/paper-published/.
+        run: |
+          count=$(grep -rl '<signed-section' public/ | wc -l)
+          echo "Found $count pages with <signed-section> placeholders"
+          if [ "$count" -lt 6 ]; then
+            echo "ERROR: Expected at least 6 pages with signed-section placeholders"
+            exit 1
+          fi
+
+      - name: Install htmltrust-sign
+        run: go install github.com/HTMLTrust/htmltrust-hugo/cmd/htmltrust-sign@latest
+
+      - name: Sign content
+        env:
+          HTMLTRUST_SIGNING_KEY: ${{ secrets.HTMLTRUST_SIGNING_KEY }}
+        run: |
+          htmltrust-sign \
+            --dir public \
+            --keyid did:web:jason-grey.com \
+            --domain www.htmltrust.org \
+            -v
+
+      - name: Verify signed sections are complete
+        run: |
+          if grep -rq 'data-htmltrust-placeholder' public/; then
+            echo "ERROR: placeholder markers remain - signer did not run on all sections"
+            exit 1
+          fi
+          for f in $(grep -rl '<signed-section' public/); do
+            case "$f" in *.html) ;; *) continue ;; esac
+            grep -q 'content-hash="sha256:' "$f" || { echo "MISSING content-hash in $f"; exit 1; }
+            grep -q 'signature="' "$f" || { echo "MISSING signature in $f"; exit 1; }
+            grep -q 'keyid="did:web:' "$f" || { echo "MISSING keyid in $f"; exit 1; }
+            grep -q 'algorithm="ed25519"' "$f" || { echo "MISSING algorithm in $f"; exit 1; }
+          done
+          echo "OK: all signed-section elements carry the four spec-required attributes"
 
       - uses: actions/upload-artifact@v7
         with:

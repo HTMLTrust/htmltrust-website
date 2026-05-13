@@ -285,5 +285,5 @@ hugoblox:
 # `htmltrust.sign: true` and may add per-page `htmltrust.claims`.
 # ──────────────────────────────────────────────────────────────────────────────
 htmltrust:
-  keyid: "did:web:www.htmltrust.org"
+  keyid: "did:web:jason-grey.com"
   algorithm: "ed25519"
