@@ -66,7 +66,7 @@ sequenceDiagram
     C->>B: Request signature over payload
     B->>B: Sign with private key
     B-->>C: signature
-    C->>C: Embed <signed-section>
+    C->>C: Embed in signed-section
     C-->>A: Publish page
     C-->>D: Publish hash + keyid (optional)
 ```
@@ -83,7 +83,7 @@ sequenceDiagram
     participant K as Key resolver
     participant D as Directory (optional)
     U->>P: GET page
-    P-->>U: HTML with <signed-section>
+    P-->>U: HTML with signed-section
     U->>U: Canonicalize text → hash
     U->>K: Resolve keyid
     K-->>U: Public key
