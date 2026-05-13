@@ -2,6 +2,12 @@
 title: 'Reference implementations'
 description: 'Open-source code for every layer — browser, CMS, server, canonicalization.'
 date: 2026-05-13
+htmltrust:
+  sign: true
+  claims:
+    content-type: 'Information'
+    license: 'CC-BY-4.0'
+    ai-assistance: 'Human+AI'
 ---
 
 Reference implementations exist for every layer of the system. All are MIT-licensed and live under the [HTMLTrust GitHub organization](https://github.com/HTMLTrust).

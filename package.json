@@ -15,5 +15,6 @@
     "pagefind": "^1.4.0",
     "preact": "^10.27.2",
     "tailwindcss": "^4.1.12"
-  }
+  },
+  "license": "CC-BY-NC-ND-4.0"
 }

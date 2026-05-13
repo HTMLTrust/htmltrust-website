@@ -2,6 +2,12 @@
 title: 'Frequently asked questions'
 description: 'Common questions about HTMLTrust and content verification.'
 date: 2026-05-13
+htmltrust:
+  sign: true
+  claims:
+    content-type: 'Information'
+    license: 'CC-BY-4.0'
+    ai-assistance: 'Human+AI'
 ---
 
 ## What is HTMLTrust?

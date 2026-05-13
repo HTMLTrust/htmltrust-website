@@ -2,6 +2,12 @@
 title: 'System architecture'
 description: 'How authors, CMSes, browsers, crawlers, and federated trust directories interact.'
 date: 2026-05-13
+htmltrust:
+  sign: true
+  claims:
+    content-type: 'Specification'
+    license: 'CC-BY-4.0'
+    ai-assistance: 'Human+AI'
 ---
 
 HTMLTrust is a system of small, independent pieces. Authors sign content. CMSes embed signatures. Browsers verify locally. Optional directories store endorsements and surface reputation. No piece is required for verification to work.

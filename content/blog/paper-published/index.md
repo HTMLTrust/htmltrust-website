@@ -8,6 +8,12 @@ tags:
   - paper
   - specification
   - announcement
+htmltrust:
+  sign: true
+  claims:
+    content-type: 'Article'
+    license: 'CC-BY-4.0'
+    ai-assistance: 'Human+AI'
 ---
 
 We're pleased to share the publication of *Toward Decentralized Trust and Verifiable Content on the Web*, the paper that lays out the technical foundation for the HTMLTrust project.

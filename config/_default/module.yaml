@@ -7,6 +7,7 @@
 imports:
   - path: github.com/HugoBlox/kit/modules/integrations/netlify
   - path: github.com/HugoBlox/kit/modules/blox
+  - path: github.com/HTMLTrust/htmltrust-hugo
 
 # Install any Hugo Blox within the `hugo-blox/blox/` folder
 mounts:

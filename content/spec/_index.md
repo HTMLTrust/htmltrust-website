@@ -2,6 +2,12 @@
 title: 'The HTMLTrust spec'
 description: 'One new HTML element, four required attributes, an 8-phase canonicalization algorithm, and a federation model.'
 date: 2026-05-13
+htmltrust:
+  sign: true
+  claims:
+    content-type: 'Specification'
+    license: 'CC-BY-4.0'
+    ai-assistance: 'Human+AI'
 ---
 
 The HTMLTrust specification is small on purpose. It defines:

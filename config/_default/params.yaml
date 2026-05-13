@@ -277,3 +277,13 @@ hugoblox:
     # Affiliate referral code for rewards program
     # Join affiliate program: https://hugoblox.com/affiliates
     affiliate_code: ""
+
+# ──────────────────────────────────────────────────────────────────────────────
+# HTMLTRUST CONTENT SIGNING
+# Site-level defaults consumed by github.com/HTMLTrust/htmltrust-hugo and the
+# htmltrust-sign post-build tool. Individual pages opt in via front-matter
+# `htmltrust.sign: true` and may add per-page `htmltrust.claims`.
+# ──────────────────────────────────────────────────────────────────────────────
+htmltrust:
+  keyid: "did:web:www.htmltrust.org"
+  algorithm: "ed25519"

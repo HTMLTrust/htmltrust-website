@@ -2,6 +2,12 @@
 title: 'Use Cases'
 description: 'Where HTMLTrust adds value — journalism, academia, civic info, AI rights, and more.'
 date: 2026-05-13
+htmltrust:
+  sign: true
+  claims:
+    content-type: 'Information'
+    license: 'CC-BY-4.0'
+    ai-assistance: 'Human+AI'
 ---
 
 HTMLTrust is a flexible framework for content verification. Below are scenarios where cryptographic content signing and verification add real value, organized by audience.
