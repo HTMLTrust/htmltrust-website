@@ -18,11 +18,11 @@ HTMLTrust is a decentralized framework for embedding cryptographic trust directl
 
 Unlike blockchain-based or DRM-centric systems, HTMLTrust is:
 
-- **Lightweight** — minimal impact on page performance
-- **Browser-compatible** — works with standard web technologies
-- **Web-native** — designed around HTML, not bolted on
-- **Decentralized** — no central authority required
-- **User-configurable** — supports personal trust policies
+- **Lightweight:** Minimal impact on page performance
+- **Browser-compatible:** Works with standard web technologies
+- **Web-native:** Designed around HTML
+- **Decentralized:** No central authority required
+- **User-configurable:** Supports personal trust policies
 
 Existing methods like DKIM and PGP provide digital signatures, and ISCC provides content fingerprinting, but none integrate cleanly with web-native publishing or browser-based verification at the content-block level.
 
@@ -40,7 +40,7 @@ Browsers (via extensions) verify the signature against the author's public key a
 
 The system supports multiple registered algorithms:
 
-- **Ed25519** (`ed25519`) — mandatory to implement
+- **Ed25519** (`ed25519`): mandatory to implement
 - **ECDSA** over P-256 / P-384 (`ecdsa-p256`, `ecdsa-p384`)
 - **RSA** (`rsa-pss-sha256`, `rsa-pkcs1-sha256`)
 
@@ -52,7 +52,7 @@ No. HTMLTrust uses standard public-key cryptography and works with existing web 
 
 ## Can I sign only parts of a page?
 
-Yes — that is a core feature. Each `<signed-section>` is independent, so a single page can have multiple signed blocks from different authors (e.g., a forum, a collaborative article, or a page with editorial and user-generated content).
+Yes. Each `<signed-section>` is independent, so a single page can have multiple signed blocks from different authors, such as a forum or a collaborative article.
 
 ## What happens in browsers that don't support it?
 
@@ -91,16 +91,16 @@ A reference plugin exists for **WordPress**, and the Hugo module provides the co
 
 Content metadata can include claims about AI involvement:
 
-- **Human-only** — no AI was used
-- **Human+AI** — human-authored with AI assistance
-- **AI+Human** — AI-generated with human editing
-- **AI-only** — fully AI-generated
+- **Human-only:** No AI was used
+- **Human+AI:** Human-authored with AI assistance
+- **AI+Human:** AI-generated with human editing
+- **AI-only:** Fully AI-generated
 
 These claims are signed by the author, providing a cryptographically verifiable assertion (though not a proof) of content origin.
 
 ## Can HTMLTrust prevent AI training on my content?
 
-HTMLTrust metadata can include explicit AI training preferences (aligned with emerging standards like [Content Preferences](https://datatracker.ietf.org/doc/draft-vaughan-aipref-vocab/)). Technical enforcement depends on AI developers respecting the signals, but HTMLTrust provides a standardized, cryptographically signed way to express creator preferences — distinct from a `robots.txt` that can be silently stripped.
+HTMLTrust metadata can include explicit AI training preferences aligned with emerging standards such as [Content Preferences](https://datatracker.ietf.org/doc/draft-vaughan-aipref-vocab/). The signed preference travels with the verified content. Enforcement still depends on AI developers honoring it.
 
 ## Is HTMLTrust an official web standard?
 

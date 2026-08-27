@@ -43,7 +43,7 @@ jobs:
         # re-resolving semver ranges on every run. --ignore-scripts blocks
         # dependency lifecycle hooks; the platform binaries this build needs
         # (@tailwindcss/oxide, @pagefind/linux-x64, @parcel/watcher) all arrive
-        # as optional dependencies, not as postinstall downloads.
+        # as optional dependencies. Postinstall browser downloads stay disabled.
         run: npm ci --ignore-scripts
 
       - name: Build site
@@ -80,7 +80,7 @@ jobs:
   # only third-party code executing alongside the key is the pinned signer
   # binary itself.
   #
-  # This is containment, not a fix. The key is still a raw Ed25519 secret that
+  # This containment limits exposure within the job. The key remains a raw Ed25519 secret that
   # a compromised runner can exfiltrate and use offline for as long as the key
   # is trusted. The real fix is to stop handing the private key to CI: sign via
   # a KMS/HSM that holds the key and exposes only a sign operation, with the

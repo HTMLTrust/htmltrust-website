@@ -19,7 +19,7 @@ This page hosts the W3C Community Group Report draft for HTMLTrust. It covers th
 ## Read it
 
 - [Rendered draft (ReSpec)](./draft.html)
-- [Full review report](./review.md) — security and browser-researcher review against the reference implementations, with explicit findings
+- [Full review report](./review.md): security and browser-researcher review against the reference implementations, with explicit findings
 
 ## Top known issues
 

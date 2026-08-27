@@ -20,7 +20,7 @@ This page hosts the IETF Internet-Draft for the HTMLTrust wire protocol. It cove
 
 - [Rendered draft (HTML, via IETF author-tools)](./draft-grey-htmltrust-00.html)
 - [kramdown-rfc source (markdown)](./draft-grey-htmltrust-00.md)
-- [Full review report](./review.md) — security and interoperability review against the reference implementations
+- [Full review report](./review.md): security and interoperability review against the reference implementations
 
 ## Top known issues
 

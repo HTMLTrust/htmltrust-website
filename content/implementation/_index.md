@@ -1,6 +1,6 @@
 ---
 title: 'Reference implementations'
-description: 'Open-source code for every layer — browser, CMS, server, canonicalization.'
+description: 'Open-source code for browsers, CMS integrations, trust directories, and canonicalization.'
 date: 2026-05-13
 htmltrust:
   sign: true
@@ -14,7 +14,7 @@ Reference implementations exist for every layer of the system and live under the
 
 ## Canonicalization libraries
 
-Same canonical output across languages — every implementation passes the same conformance corpus.
+Every implementation passes the same conformance corpus and produces the same canonical output.
 
 | Language | Repo | Dependencies | Used by |
 |---|---|---|---|
@@ -44,7 +44,7 @@ const canonical = normalizeText('He said, "Hello…"');
 - Additional directory implementations can be developed against the published
   protocol and conformance corpus.
 
-A directory is optional infrastructure. Verifying a signature never requires contacting one — only key resolution (when the `keyid` points at a directory) and reputation lookup do.
+A directory is optional infrastructure. Signature verification is local. A network call occurs when `keyid` points at a directory or the user requests reputation data.
 
 ## Browser extension
 
@@ -53,7 +53,7 @@ A directory is optional infrastructure. Verifying a signature never requires con
 Chrome, Firefox, and Safari builds are available. Chromium-based browsers such as Edge use the Chrome build.
 
 - Scans every page for `<signed-section>` elements
-- Canonicalizes and hashes locally — no network call for verification
+- Canonicalizes and hashes locally without a network call
 - Resolves `keyid` by the configured method (DID, URL, directory)
 - Renders a per-block trust badge with hover detail
 - User trust policy editable in the options page
@@ -64,8 +64,8 @@ The eventual goal is native browser support via a W3C standard. The extension is
 
 **[htmltrust-cms-reference](https://github.com/HTMLTrust/htmltrust-cms-reference)**
 
-- **WordPress** — production-ready reference plugin
-- **Hugo** — module + signing script
+- **WordPress:** production-ready reference plugin
+- **Hugo:** module and signing script
 - Architecture supports any CMS that can call an HTTP API and embed HTML attributes
 
 Author workflow:
@@ -110,11 +110,11 @@ and verify its signature with the protocol rules.
 
 We have strong preferences but have not yet committed normatively. Community feedback welcome.
 
-- **HTML-to-text extraction (Stage 1 canonicalization)** — the [spec](/spec/#stage-1--extract-canonical-text-from-html) defines the current rules: DOM walk, skipped executable and metadata elements, signed semantic attributes, block boundaries, and `<br>` handling. Parser-backed verification and malformed-input coverage remain active hardening work.
-- **Hash encoding** — fixed as unpadded standard Base64 in the current protocol draft.
-- **Attribute expansion** — `href`, `src`, `alt`, and `aria-label` are covered now; the community should help decide whether to add attributes such as `title`, `cite`, image dimensions, or more ARIA naming inputs.
-- **Wrapped re-signing** — formalizing the republisher attribution chain
-- **Reputation scoring** — what minimal directory contract is enough?
+- **HTML-to-text extraction (Stage 1 canonicalization):** the [spec](/spec/#stage-1--extract-canonical-text-from-html) defines the current rules for DOM walking, skipped elements, signed attributes, block boundaries, and `<br>` handling. Parser-backed verification and malformed-input coverage remain active hardening work.
+- **Hash encoding:** fixed as unpadded standard Base64 in the current protocol draft.
+- **Attribute expansion:** `href`, `src`, `alt`, and `aria-label` are covered now. The community should help decide which additional attributes carry signed meaning.
+- **Wrapped re-signing:** formalizing the republisher attribution chain
+- **Reputation scoring:** defining the minimal directory contract
 
 ## Get involved
 
