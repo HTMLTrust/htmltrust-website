@@ -38,13 +38,13 @@ Browsers (via extensions) verify the signature against the author's public key a
 
 ## What cryptographic algorithms are supported?
 
-The system supports multiple algorithms:
+The system supports multiple registered algorithms:
 
-- **Ed25519** (recommended)
-- **RSA** (2048-bit+)
-- **ECDSA** (secp256k1)
+- **Ed25519** (`ed25519`) — mandatory to implement
+- **ECDSA** over P-256 / P-384 (`ecdsa-p256`, `ecdsa-p384`)
+- **RSA** (`rsa-pss-sha256`, `rsa-pkcs1-sha256`)
 
-The system is algorithm-agnostic and specified via the `algorithm` attribute on each `<signed-section>`.
+Each `<signed-section>` names its algorithm via the `algorithm` attribute, using the identifiers above from the specification's algorithm registry.
 
 ## Does it require blockchain?
 
@@ -60,7 +60,7 @@ HTMLTrust degrades gracefully. Unsigned or unrecognized `<signed-section>` eleme
 
 ## Why does a signed page show as *invalid* in the browser even when the signature is mathematically correct?
 
-This is a real, observed issue: HTMLTrust signs the **static HTML** that leaves the publishing pipeline, but the browser extension verifies against the **live DOM** — the state of the page after every script on the page has finished running. If anything inside a `<signed-section>` is mutated between page load and verification, the recomputed `content-hash` won't match the signed one, and the extension reports an invalid signature.
+This is a real, observed issue: HTMLTrust signs the **server HTML** that leaves the publishing pipeline. Browser verifiers should use the original response snapshot before page scripts or browser extensions can mutate it; if that snapshot is unavailable, they can re-request the document from the same origin. Live-DOM verification is a separate state because anything inside a `<signed-section>` can be changed after load.
 
 We hit this on our own site initially: the Hugo Blox docs theme injects a `<button class="copy-button">Copy</button>` into every `<pre>` code block at runtime. The signer never saw the button, so the canonical text the verifier reads includes extra "Copy" tokens that aren't in the hash.
 
@@ -70,21 +70,22 @@ Other common culprits:
 - Lazy-loading or share-button widgets that add nodes inside article content
 - Theme JS that decorates headings, callouts, or admonitions at runtime
 
-**What to do about it** — until the spec defines a mutation-skip marker, the practical workarounds are:
+**What to do about it**:
 
 1. Configure or patch the theme so it does **not** inject nodes inside `<signed-section>` descendants
 2. Pre-render any decoration server-side, so the signer hashes it
 3. Move runtime-injected decoration **outside** the signed region (as a sibling, not a child)
+4. Use a verifier that checks the server HTML snapshot and treats a changed live DOM as stale rather than fully verified
 
-This is being tracked as a spec open design question — see [Known Issue: Runtime DOM Mutation](https://github.com/HTMLTrust/htmltrust-spec#known-issue-runtime-dom-mutation-breaks-verification) in the spec README.
+A mutation-skip marker such as `data-htmltrust-ignore="true"` has no normative effect in the current draft. This is tracked in [Known Issue: Runtime DOM Mutation](https://github.com/HTMLTrust/htmltrust-spec#known-issue-runtime-dom-mutation-breaks-verification) in the spec README.
 
 ## What browsers are supported?
 
-A reference browser extension is available for **Chrome** (and Chromium-based browsers like Edge). Firefox and Safari support is planned. Eventually, the goal is native browser support via a W3C standard.
+A reference browser extension is available for **Chrome**, Firefox, and Safari. Chromium-based browsers such as Edge use the Chrome build. Eventually, the goal is native browser support via a W3C standard.
 
 ## What CMS platforms are supported?
 
-A reference plugin exists for **WordPress**. Hugo integration is planned, and the architecture supports any CMS that can call an HTTP API and embed HTML attributes. See the [CMS reference repository](https://github.com/HTMLTrust/htmltrust-cms-reference) for details.
+A reference plugin exists for **WordPress**, and the Hugo module provides the corresponding signing partial and command-line signer. The architecture supports any CMS that can call an HTTP API and embed HTML attributes. See the [CMS reference repository](https://github.com/HTMLTrust/htmltrust-cms-reference) for details.
 
 ## How does HTMLTrust handle AI-generated content?
 

@@ -40,7 +40,7 @@ HTMLTrust is a flexible framework for content verification. Below are scenarios 
 
 **How HTMLTrust helps:**
 
-- Creators sign original content, and signatures persist when shared
+- Creators sign original content; the signature verifies at its publication origin, and the content hash lets a re-shared copy be traced back to that original
 - Platforms can display verification status alongside content
 - Users filter by verification status
 - Moderation systems gain additional trust signals
