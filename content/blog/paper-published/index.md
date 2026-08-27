@@ -33,10 +33,10 @@ We're pleased to share the publication of *Toward Decentralized Trust and Verifi
 
 Alongside the paper, we've published reference implementations:
 
-- **[Trust Directory Server](https://github.com/HTMLTrust/htmltrust-server-reference)** — Node.js + MongoDB API for author management, content signing, verification, and reputation tracking
-- **[Browser Extension](https://github.com/HTMLTrust/htmltrust-browser-reference)** — Chrome extension for client-side signature validation
-- **[CMS Plugins](https://github.com/HTMLTrust/htmltrust-cms-reference)** — WordPress plugin and Hugo integration for server-side content signing
-- **[Canonicalization Libraries](https://github.com/HTMLTrust/htmltrust-canonicalization)** — JavaScript, Go, and PHP implementations, all passing the same conformance suite
+- **[Trust Directory Server](https://github.com/HTMLTrust/htmltrust-server-reference):** Node.js and MongoDB API for author management, content signing, verification, and reputation tracking
+- **[Browser Extension](https://github.com/HTMLTrust/htmltrust-browser-reference):** Chrome, Firefox, and Safari extensions for client-side signature validation
+- **[CMS Plugins](https://github.com/HTMLTrust/htmltrust-cms-reference):** WordPress plugin and Hugo integration for server-side content signing
+- **[Canonicalization Libraries](https://github.com/HTMLTrust/htmltrust-canonicalization):** JavaScript, Go, PHP, Rust, and Python implementations that pass the same conformance suite
 
 ## Read the paper
 

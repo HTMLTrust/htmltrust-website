@@ -1,6 +1,6 @@
 ---
 title: 'Use Cases'
-description: 'Where HTMLTrust adds value — journalism, academia, civic info, AI rights, and more.'
+description: 'How publishers, researchers, and civic information services can use HTMLTrust.'
 date: 2026-05-13
 htmltrust:
   sign: true
@@ -40,7 +40,7 @@ HTMLTrust is a flexible framework for content verification. Below are scenarios 
 
 **How HTMLTrust helps:**
 
-- Creators sign original content, and signatures persist when shared
+- Creators sign original content; the signature verifies at its publication origin, and the content hash lets a re-shared copy be traced back to that original
 - Platforms can display verification status alongside content
 - Users filter by verification status
 - Moderation systems gain additional trust signals
@@ -73,7 +73,7 @@ HTMLTrust is a flexible framework for content verification. Below are scenarios 
 
 - Signed metadata includes explicit AI training preferences
 - Content hashes enable tracking of content usage across the web
-- Cryptographic signatures bind preferences to the content itself — not a `robots.txt` file that can be ignored or stripped
+- Cryptographic signatures bind a training preference to the signed content region
 
 ## Getting started
 
