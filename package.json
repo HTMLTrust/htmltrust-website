@@ -6,7 +6,7 @@
   "description": "Documentation starter template for Hugo Blox with Tailwind CSS v4",
   "scripts": {
     "dev": "hugo server --disableFastRender",
-    "build": "hugo --minify && pnpm run pagefind",
+    "build": "hugo --minify && npm run pagefind",
     "pagefind": "pagefind --site public"
   },
   "dependencies": {
