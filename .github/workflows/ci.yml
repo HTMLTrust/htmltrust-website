@@ -6,33 +6,45 @@ on:
   pull_request:
     branches: [main]
 
+# Least privilege. The deploy job talks to Cloudflare with its own API token
+# and never needs write access to this repository.
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build Site
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v3
+        uses: peaceiris/actions-hugo@2752ce1d29631191ea3f27c23495fa06139a5b78 # v3
         with:
           hugo-version: "0.161.1"
           extended: true
 
       - name: Setup Go
         # Required by Hugo Modules to fetch the Hugo Blox theme on first build.
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version: "1.22"
 
       - name: Setup Node.js
         # Hugo Blox needs preact + tailwindcss + pagefind at build time.
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: "22"
 
       - name: Install npm deps
-        run: npm install
+        # `npm ci` installs the exact tree in package-lock.json instead of
+        # re-resolving semver ranges on every run. --ignore-scripts blocks
+        # dependency lifecycle hooks; the platform binaries this build needs
+        # (@tailwindcss/oxide, @pagefind/linux-x64, @parcel/watcher) all arrive
+        # as optional dependencies, not as postinstall downloads.
+        run: npm ci --ignore-scripts
 
       - name: Build site
         # node_modules/.bin must be on PATH so the tailwindcss CLI resolves.
@@ -46,7 +58,7 @@ jobs:
       - name: Verify placeholder signed-sections exist
         # Hugo emits <signed-section> placeholders with data-htmltrust-placeholder
         # markers on every page that opts in via `htmltrust.sign: true` front-matter.
-        # The signer (next step) will replace them with real content-hash / signature
+        # The signer (the `sign` job) will replace them with real content-hash / signature
         # / keyid / algorithm attributes. Six content pages currently opt in:
         # /spec/, /architecture/, /implementation/, /use-cases/, /faq/,
         # /blog/paper-published/.
@@ -58,14 +70,59 @@ jobs:
             exit 1
           fi
 
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: website-unsigned
+          path: public/
+
+  # The production signing key lives in this job and nowhere else. The job
+  # installs no npm packages and runs no dependency lifecycle scripts, so the
+  # only third-party code executing alongside the key is the pinned signer
+  # binary itself.
+  #
+  # This is containment, not a fix. The key is still a raw Ed25519 secret that
+  # a compromised runner can exfiltrate and use offline for as long as the key
+  # is trusted. The real fix is to stop handing the private key to CI: sign via
+  # a KMS/HSM that holds the key and exposes only a sign operation, with the
+  # job authenticating through GitHub OIDC (`permissions: id-token: write`) so
+  # there is no long-lived secret to steal in the first place.
+  sign:
+    name: Sign content
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: website-unsigned
+          path: public/
+
+      - name: Setup Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          # Match the pinned signer's go.mod and retain current standard-library
+          # security fixes.
+          go-version: "1.25"
+
       - name: Install htmltrust-sign
-        run: go install github.com/HTMLTrust/htmltrust-hugo/cmd/htmltrust-sign@latest
+        # Pinned to an immutable commit. With `@latest`, any push to
+        # htmltrust-hugo -- or a tag moved by anyone with write access there --
+        # silently changes the code that handles the production signing key.
+        #
+        # This revision delegates canonicalization to the shared Go package and
+        # pins golang.org/x/net v0.55.0.
+        run: go install github.com/HTMLTrust/htmltrust-hugo/cmd/htmltrust-sign@d39ef12d068d6028076d91eedf1a5f98abcd7b8d
 
       - name: Sign content
         env:
           HTMLTRUST_SIGNING_KEY: ${{ secrets.HTMLTRUST_SIGNING_KEY }}
+        # Invoked by absolute path. A bare `htmltrust-sign` resolves through
+        # $PATH, and any earlier step can prepend a directory to $PATH via
+        # $GITHUB_PATH and shadow the binary with one that keeps a copy of the
+        # key.
         run: |
-          htmltrust-sign \
+          "$(go env GOPATH)/bin/htmltrust-sign" \
             --dir public \
             --keyid did:web:jason-grey.com \
             --domain www.htmltrust.org \
@@ -77,16 +134,16 @@ jobs:
             echo "ERROR: placeholder markers remain - signer did not run on all sections"
             exit 1
           fi
-          for f in $(grep -rl '<signed-section' public/); do
+          while IFS= read -r -d '' f; do
             case "$f" in *.html) ;; *) continue ;; esac
             grep -q 'content-hash="sha256:' "$f" || { echo "MISSING content-hash in $f"; exit 1; }
             grep -q 'signature="' "$f" || { echo "MISSING signature in $f"; exit 1; }
             grep -q 'keyid="did:web:' "$f" || { echo "MISSING keyid in $f"; exit 1; }
             grep -q 'algorithm="ed25519"' "$f" || { echo "MISSING algorithm in $f"; exit 1; }
-          done
+          done < <(grep -rlZ '<signed-section' public/)
           echo "OK: all signed-section elements carry the four spec-required attributes"
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: website
           path: public/
@@ -94,17 +151,19 @@ jobs:
   deploy:
     name: Deploy to Cloudflare Pages
     runs-on: ubuntu-latest
-    needs: build
+    needs: sign
+    permissions:
+      contents: read
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     continue-on-error: true
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: website
           path: public/
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v4
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
