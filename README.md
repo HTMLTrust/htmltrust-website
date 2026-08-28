@@ -108,6 +108,22 @@ The draft IETF and W3C documents are published under `content/spec/ietf-draft/`
 and `content/spec/w3c-cg/`. Their generated HTML and review reports are kept in
 `static/spec/` so readers can download the exact rendered artifacts.
 
+The source of truth for these five published artifacts is the sibling
+`htmltrust-spec` checkout. From the website repository, refresh the copies with:
+
+```sh
+scripts/sync-spec-artifacts.sh sync
+```
+
+Use `--check` in CI or before committing to confirm that the published copies
+match the spec checkout without changing files:
+
+```sh
+scripts/sync-spec-artifacts.sh --check
+```
+
+For a spec checkout elsewhere, pass its path with `--source /path/to/htmltrust-spec`.
+
 The site wraps signed pages through
 `layouts/_partials/htmltrust-signed-section.html`. Set this front matter on a
 page to opt in:
