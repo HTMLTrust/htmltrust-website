@@ -716,3 +716,32 @@ Security/interoperability impact: This is manageable for prototypes, but the spe
 Recommendation: Add a "Prototype implementation status" note to the W3C draft or project README that distinguishes the current extension/library profile from a future native UA implementation. Use that note to decide which mismatches are code debt versus intentional spec ambition.
 
 Fix: Spec documentation now; code later if the project chooses to pursue native browser conformance.
+
+## 4. Disposition of the 2026-08-27 follow-up pass
+
+The companion draft now resolves the browser-facing specification choices
+that could be closed without claiming prototype support:
+
+- `signed-section` is a native built-in HTML element with a browser-owned
+  `HTMLSignedSectionElement` interface. Autonomous custom-element emulation is
+  explicitly a nonconforming prototype profile.
+- Layer-1 verification requires source octets from a captured navigation
+  response or a source refetch. The result distinguishes `source-only`,
+  `rendered-match`, and `stale` input states.
+- The captured input is the decoded navigation response passed to the HTML
+  parser, after service-worker interception and before page or extension
+  mutation. A later refetch is a distinct input.
+- The DOM interface uses the same closed failure vocabulary as the IETF draft.
+- Page script cannot select trust directories. User, administrator, or
+  embedding-verifier policy controls directory access.
+- Mutation invalidation covers required element attributes, claim metadata,
+  signed semantic attributes, descendant text and structure, and source base
+  URL changes.
+- Nested signed sections contribute their canonical content and a block
+  boundary to an outer section while being verified independently.
+
+The extension and JavaScript client remain protocol prototypes. They do not
+implement the native DOM interface, browser-owned navigation-response capture,
+or the full mutation lifecycle. Parser-backed source mapping, signed-attribute
+escaping, and the remaining native-user-agent work stay as separate
+implementation tasks.

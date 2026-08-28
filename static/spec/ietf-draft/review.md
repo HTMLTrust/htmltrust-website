@@ -746,3 +746,38 @@ Security/interoperability impact: A hostile page can force expensive canonicaliz
 Recommendation: Add normative or strongly recommended ceilings and corresponding machine-readable failure outcomes. At minimum cover maximum signed-section bytes, maximum claims, maximum claim bytes, maximum key document bytes, maximum endorsements per page, redirect count, timeout, and maximum concurrent verifier fetches. Require failures to be non-valid and distinguishable in diagnostics without exposing signed content bytes to page scripts.
 
 Fix: Spec first, then code to enforce the shared limits.
+
+## 4. Disposition of the 2026-08-27 follow-up pass
+
+The companion draft now resolves the requested specification decisions:
+
+- `ietf-draft/draft-grey-htmltrust-00.md` has a dated revision and no
+  placeholder values in its examples.
+- The directory example contains reproducible RFC 9421 fields, a body
+  digest, signature base, and Ed25519 signature. The legacy
+  `(request-target)` name is explicitly rejected.
+- Signature representations are fixed for every registered algorithm:
+  Ed25519 raw bytes, fixed-width ECDSA `R || S`, and modulus-width RSA with
+  an exact RSA-PSS salt profile. HTMLTrust key documents use SPKI DER and
+  require algorithm-to-key parameter matching.
+- Endorsements require RFC 8785 JCS, duplicate-member rejection, complete
+  preservation of optional and unknown members, and have a checked-in
+  Ed25519 vector at `ietf-draft/vectors/endorsement-01.json`.
+- Attribute and text records escape U+0040 before emission, so literal text
+  cannot be confused with the reserved `@attr:` record prefix.
+- `ietf-draft/vectors/parser-profile.json` defines the portable parser
+  profile and its malformed-input rejection cases.
+- `ietf-draft/vectors/attribute-records.json`, `nested-section.json`, and
+  `origin-serialization.json` cover record framing, nested boundaries, and
+  tuple-origin behavior.
+- Resource ceilings and the closed failure vocabulary are normative in the
+  draft.
+- Directory content submissions carry the complete direct-child claim set,
+  including `signed-at`, and directories recompute the claims hash exactly
+  as the canonicalization section specifies.
+
+The code-side work remains a separate integration task: each canonicalizer
+must implement the new U+0040 escaping rule, parser-profile rejection, and
+resource ceilings, while each JSON implementation must use a complete RFC
+8785 implementation. This review remains an audit record and is not a claim
+that those downstream changes have already landed.

@@ -3,11 +3,13 @@
 <head>
   <meta charset="utf-8">
   <title>HTMLTrust: Signed Sections for the Web</title>
+  <link rel="icon" href="data:,">
   <script src="https://www.w3.org/Tools/respec/respec-w3c" async class="remove"></script>
   <script class="remove">
     var respecConfig = {
-      specStatus: "CG-DRAFT",
-      group: "htmltrust",
+      specStatus: "unofficial",
+      xref: { profile: "web-platform", specs: ["hr-time"] },
+      additionalCopyrightHolders: "Jason Grey. Licensed under CC BY-NC-ND 4.0.",
       editors: [{
         name: "Jason Grey",
         email: "jason@jason-grey.com",
@@ -17,7 +19,7 @@
       shortName: "htmltrust",
       edDraftURI: "https://htmltrust.org/spec/",
       latestVersion: null,
-      lint: { "no-http-props": false },
+      lint: { "no-http-props": false, "no-unused-dfns": false },
       localBiblio: {
         "I-D.grey-htmltrust": {
           title: "HTMLTrust Protocol: Canonicalization, Signing Payload, and Trust Directory API",
@@ -32,6 +34,18 @@
           href: "https://github.com/keith-turner/ecoji",
           publisher: "Keith Turner",
           rawDate: "2018"
+        },
+        "SXG": {
+          title: "Signed HTTP Exchanges",
+          href: "https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html",
+          authors: ["Jeffrey Yasskin"],
+          publisher: "WICG"
+        },
+        "C2PA": {
+          title: "C2PA Technical Specification 2.0",
+          href: "https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html",
+          authors: ["Coalition for Content Provenance and Authenticity"],
+          rawDate: "2024"
         }
       }
     };
@@ -50,8 +64,9 @@
     This document specifies <dfn>HTMLTrust</dfn>, an HTML extension that allows
     authors to cryptographically sign semantically meaningful regions of a web
     page using a new <code>&lt;signed-section&gt;</code> element. Signed sections
-    carry an author-resolvable key identifier, a signature, a content hash, and
-    optional in-band claims expressed as child <code>&lt;meta&gt;</code> elements.
+    carry the six wire attributes required by the selected signing profile, a
+    required <code>signed-at</code> claim, and optional additional claims
+    expressed as child <code>&lt;meta&gt;</code> elements.
     User agents verify these signatures locally and expose results through a
     DOM interface, allowing pages, extensions, and assistive technologies to
     distinguish content whose authorship has been cryptographically attested
@@ -68,9 +83,9 @@
 
 <section id="sotd">
   <p>
-    This is an early Community Group Draft. It has no standing within the W3C
-    Recommendation track. Implementations are encouraged to prototype against
-    this draft and to file issues against the
+    This is an unofficial draft prepared for Community Group review. It has no
+    standing within the W3C Recommendation track. Implementations can
+    prototype against this draft and file issues against the
     <a href="https://github.com/jasongrey/htmltrust-spec">project repository</a>.
     Open design questions are enumerated in
     <a href="#issues">§ Open Issues</a>.
@@ -111,8 +126,8 @@
     <ul>
       <li>Add per-region author provenance to HTML without depending on a
         privileged certificate authority or registry.</li>
-      <li>Keep the parser surface minimal: a single new element with custom-
-        element semantics, no new content models, no new parser modes.</li>
+      <li>Keep the parser surface minimal: one native element, with no new
+        tokenizer states or insertion modes.</li>
       <li>Expose results through a small, well-typed DOM interface that
         scripts, extensions, and assistive technologies can consume.</li>
       <li>Allow user agents and users to compose trust policy from
@@ -134,16 +149,8 @@
         <a href="#ui-guidance">§ User Interface Guidance</a>.</li>
     </ul>
   </section>
-  <section>
+  <section id="conformance">
     <h3>Conformance</h3>
-    <p>
-      The key words <em class="rfc2119">MUST</em>, <em class="rfc2119">MUST NOT</em>,
-      <em class="rfc2119">SHOULD</em>, <em class="rfc2119">SHOULD NOT</em>, and
-      <em class="rfc2119">MAY</em> in this document are to be interpreted as
-      described in [[RFC2119]] [[RFC8174]] when, and only when, they appear in
-      all capitals, as shown here. Sections marked <em>informative</em> do not
-      contain normative requirements.
-    </p>
     <p>
       Conformance classes are <dfn>user agents</dfn> (typically browsers or
       browser extensions that implement the processing model in
@@ -171,7 +178,8 @@
       <dt>Contexts in which this element can be used</dt>
       <dd>Where flow content is expected.</dd>
       <dt>Content model</dt>
-      <dd>Zero or more <code>&lt;meta&gt;</code> elements carrying claims (see
+      <dd>One <code>&lt;meta name="signed-at"&gt;</code> claim and zero or more
+        additional claim <code>&lt;meta&gt;</code> elements (see
         <a href="#claim-meta">§ In-band claim metadata</a>), followed by flow
         content.</dd>
       <dt>Tag omission</dt>
@@ -184,7 +192,10 @@
       <code>signed-section</code> elements. Nested signed sections are
       verified independently; an outer signature does not imply verification
       of inner signatures, and an inner signature does not invalidate an
-      outer one.
+      outer one. When the outer section is canonicalized, the nested element's
+      content contributes to the outer canonical content and the nested
+      <code>signed-section</code> emits the block boundary defined in
+      [[I-D.grey-htmltrust]].
     </p>
   </section>
 
@@ -192,12 +203,22 @@
     <h3>Attributes</h3>
     <p>
       The following content attributes are defined on the
-      <code>signed-section</code> element. All four <em class="rfc2119">MUST</em>
+      <code>signed-section</code> element. All six <em class="rfc2119">MUST</em>
       be present on any element intended for verification; an element missing
       any required attribute <em class="rfc2119">MUST</em> be treated as
       unverifiable (see <a href="#verification-lifecycle">§ Verification lifecycle</a>).
     </p>
     <dl>
+      <dt><dfn data-dfn-for="signed-section"><code>profile</code></dfn> (required)</dt>
+      <dd>The exact, case-sensitive signing-profile identifier. This report
+        defines <code>htmltrust-signature-v1</code>. An unknown value fails
+        with <code>profile-unsupported</code>; user agents must not retry a
+        failed verification under a legacy profile.</dd>
+      <dt><dfn data-dfn-for="signed-section"><code>signature-scope</code></dfn> (required)</dt>
+      <dd>Either <code>url</code> or <code>origin</code>. URL scope binds the
+        signature to the final response URL after its fragment is removed.
+        Origin scope allows the same signature to verify at another URL on
+        the same HTTPS origin. Authoring tools should emit URL scope.</dd>
       <dt><dfn data-dfn-for="signed-section"><code>keyid</code></dfn> (required)</dt>
       <dd>
         A string identifying the signer. The value is opaque to the HTML
@@ -232,9 +253,42 @@
       any global attributes. The semantic attributes <code>href</code>,
       <code>src</code>, <code>alt</code>, and <code>aria-label</code> are
       covered by the signature when present on included descendants, as
-      defined in [[I-D.grey-htmltrust]]. Other global attributes are not
-      covered by the signature in this revision; see
-      <a href="#issues">Issue 1</a>.
+      defined by the fixed <code>htmltrust-attrs-v1</code> profile in
+      [[I-D.grey-htmltrust]]. Other global attributes are not covered by the
+      signature in this revision.
+    </p>
+    <p>
+      Signed <code>href</code> and <code>src</code> values use the
+      <code>htmltrust-safe-url-v1</code> policy. The policy consumes the
+      accepted HTML parser's decoded attribute value. User agents inspect
+      that value for controls before URL parsing, then resolve it against the
+      source snapshot's document base URL. The result must be an HTTPS URL
+      without credentials. Other schemes fail with
+      <code>url-policy-violation</code>; parse errors fail with
+      <code>attribute-canonicalization-failed</code>. Verification does not
+      fetch these signed URLs.
+    </p>
+    <p>
+      Canonicalization escapes U+0040 in text and signed attribute values
+      before emitting canonical bytes. User agents <em class="rfc2119">MUST</em>
+      apply this escaping exactly as specified in [[I-D.grey-htmltrust]];
+      a literal text sequence beginning with <code>@attr:</code> therefore
+      cannot be interpreted as an attribute record.
+    </p>
+    <p>
+      Verification input <em class="rfc2119">MUST</em> satisfy the portable
+      parser profile in [[I-D.grey-htmltrust]]. Validation operates on the
+      source octets and parser diagnostics before the recovered DOM tree is
+      accepted. User agents <em class="rfc2119">MUST</em> return
+      <code>parser-profile-unsupported</code> for duplicate attributes,
+      malformed nesting, table foster-parenting cases, foreign-content
+      integration, ambiguous character references, or malformed HTML comments
+      identified by the profile. Outside raw-text elements, comments in the
+      signed input <em class="rfc2119">MUST</em> have a closing
+      <code>--&gt;</code>; their bodies <em class="rfc2119">MUST NOT</em>
+      contain <code>--</code> or end with <code>-</code>. A live DOM alone
+      cannot establish conformance because normal HTML parsing has already
+      discarded or repaired those source conditions.
     </p>
   </section>
 
@@ -254,20 +308,27 @@
     </p>
     <dl>
       <dt><code>author</code></dt>
-      <dd>The human-readable name of the author. Informative; does not
-        affect verification.</dd>
+      <dd>The human-readable name of the author. Its normalized value
+        participates in the claims hash. The protocol assigns no identity
+        semantics to the string by itself.</dd>
       <dt><code>signed-at</code></dt>
-      <dd>An ISO 8601 timestamp [[ISO8601]] indicating when the signature
-        was produced. This value participates in the canonical signing
+      <dd>A signer-asserted UTC timestamp in the exact
+        <code>YYYY-MM-DDTHH:MM:SSZ</code> form defined by
+        [[I-D.grey-htmltrust]]. It participates in the canonical signing
         payload defined in [[I-D.grey-htmltrust]], is also included in the
         canonical claims hash like every other direct child claim, and
-        <em class="rfc2119">MUST</em> be present for a signature to verify.</dd>
+        <em class="rfc2119">MUST</em> be present for a signature to verify.
+        It proves that the value was signed; independent timestamp evidence
+        is needed to prove when the signature existed.</dd>
       <dt><code>claim:License</code></dt>
       <dd>An SPDX license identifier or URL describing the license under
-        which the signed content is offered. Informative.</dd>
+        which the signed content is offered. Its normalized value participates
+        in the claims hash; the protocol does not validate the license.</dd>
       <dt><code>claim:CanonicalURL</code></dt>
       <dd>The URL at which this signed region is canonically published.
-        Used by republication wrappers; see [[I-D.grey-htmltrust]].</dd>
+        This is descriptive signed metadata. It does not select or replace
+        the location derived from the final response URL and
+        <code>signature-scope</code>.</dd>
     </dl>
     <p>
       Claim <code>&lt;meta&gt;</code> elements <em class="rfc2119">MUST</em>
@@ -275,9 +336,13 @@
       and <em class="rfc2119">MUST</em> precede any other flow content
       children of that element. Claims nested inside descendant elements are
       not treated as claims of the enclosing <code>signed-section</code>.
+      Normalized claim names are case-sensitive. Only the exact ASCII name
+      <code>signed-at</code> has protocol timestamp semantics.
     </p>
     <aside class="example">
-      <pre>&lt;signed-section keyid="did:web:author.example"
+      <pre>&lt;signed-section profile="htmltrust-signature-v1"
+                signature-scope="url"
+                keyid="did:web:author.example#key-1"
                 signature="3q2+7w8NslfJ…"
                 content-hash="sha256:RAyBCvKT…"
                 algorithm="ed25519"&gt;
@@ -298,11 +363,11 @@
       The <code>signed-section</code> element is parsed as a normal HTML
       element using the rules in [[HTML]]. It introduces no new tokenizer
       states, no new insertion modes, and no scoping behavior beyond that of
-      a generic flow-content element. In implementations that support custom
-      elements, it <em class="rfc2119">MAY</em> be backed by a custom-element
-      definition; in implementations that do not, it is treated as
-      {{HTMLElement}} with the attributes defined above accessible through
-      the standard attribute APIs.
+      a generic flow-content element. A conforming user agent recognizes it as
+      a built-in HTML element and exposes {{HTMLSignedSectionElement}}. A
+      prototype MAY emulate the element with an autonomous custom element,
+      but that prototype is not a conforming user-agent implementation of the
+      native DOM interface in this section.
     </p>
   </section>
 
@@ -333,6 +398,8 @@
 interface HTMLSignedSectionElement : HTMLElement {
   [HTMLConstructor] constructor();
 
+  [CEReactions] attribute DOMString profile;
+  [CEReactions] attribute DOMString signatureScope;
   [CEReactions] attribute DOMString keyid;
   [CEReactions] attribute DOMString signature;
   [CEReactions] attribute DOMString contentHash;
@@ -345,7 +412,6 @@ interface HTMLSignedSectionElement : HTMLElement {
 
 dictionary VerifyOptions {
   boolean force = false;
-  sequence&lt;USVString&gt; directories = [];
   AbortSignal? signal;
 };
 
@@ -355,11 +421,41 @@ dictionary SignedSectionVerificationResult {
   DOMHighResTimeStamp timestamp;
 };
 
+enum SignedSectionFailureReason {
+  "incomplete",
+  "profile-unsupported",
+  "scope-unsupported",
+  "content-hash-mismatch",
+  "claim-missing",
+  "claim-malformed",
+  "claim-duplicate",
+  "timestamp-invalid",
+  "attribute-canonicalization-failed",
+  "url-policy-violation",
+  "parser-profile-unsupported",
+  "invalid-encoding",
+  "malformed-signature",
+  "signature-invalid",
+  "key-resolution-failed",
+  "malformed-key-document",
+  "key-revoked",
+  "algorithm-not-supported",
+  "algorithm-mismatch",
+  "origin-not-supported",
+  "resource-limit-exceeded",
+  "network-policy-blocked",
+  "source-refetch-failed",
+  "directory-unavailable"
+};
+
 dictionary SignedSectionCryptoOutcome {
   boolean valid;
-  DOMString? reason;
+  SignedSectionFailureReason? reason;
   USVString? resolvedKeyURL;
   DOMString? algorithm;
+  DOMString? profile;
+  DOMString? scope;
+  USVString? location;
   DOMString inputState;    // "source-only" | "stale" | "rendered-match"
 };
 
@@ -367,18 +463,36 @@ dictionary SignedSectionTrustOutcome {
   double score;
   DOMString tier;          // "trusted" | "neutral" | "untrusted" | "unknown"
   sequence&lt;DOMString&gt; contributors;
+  SignedSectionFailureReason? reason;
 };
   </pre>
 
   <p>
-    The reflected IDL attributes <code>keyid</code>, <code>signature</code>,
+    The <code>timestamp</code> member records when the user agent commits the
+    result. It uses the same monotonic time origin as
+    <code>performance.now()</code>. This value is local lifecycle metadata. It
+    is separate from the signer-asserted <code>signed-at</code> value and does
+    not establish publication time.
+  </p>
+
+  <p>
+    The reflected IDL attributes <code>profile</code>,
+    <code>signatureScope</code>, <code>keyid</code>, <code>signature</code>,
     <code>contentHash</code>, and <code>algorithm</code> correspond to the
-    content attributes <code>keyid</code>, <code>signature</code>,
-    <code>content-hash</code>, and <code>algorithm</code> respectively.
+    content attributes <code>profile</code>, <code>signature-scope</code>,
+    <code>keyid</code>, <code>signature</code>, <code>content-hash</code>, and
+    <code>algorithm</code> respectively.
     Mutating any of these attributes <em class="rfc2119">MUST</em> reset the
     {{HTMLSignedSectionElement/verification}} attribute to <code>null</code>
     until verification is next performed (see
     <a href="#verification-lifecycle">§ Verification lifecycle</a>).
+  </p>
+  <p>
+    A valid cryptographic outcome <em class="rfc2119">MUST</em> have a null
+    <code>reason</code>. An invalid outcome <em class="rfc2119">MUST</em> use
+    the applicable {{SignedSectionFailureReason}} value.
+    <code>directory-unavailable</code> applies only to the trust outcome and
+    cannot change a valid cryptographic outcome.
   </p>
 
   <section>
@@ -403,10 +517,9 @@ dictionary SignedSectionTrustOutcome {
     <p>
       If <code>options.force</code> is <code>true</code>, any cached result
       <em class="rfc2119">MUST</em> be discarded and the verification
-      <em class="rfc2119">MUST</em> be re-run. If
-      <code>options.directories</code> is non-empty, the user agent
-      <em class="rfc2119">MAY</em> consult those directories in addition to,
-      or in place of, its configured defaults, subject to user policy. If
+      <em class="rfc2119">MUST</em> be re-run. Page script cannot select a
+      trust directory. Directory selection belongs to user, administrator,
+      or embedding-verifier policy. If
       <code>options.signal</code> is provided and aborted, the returned
       promise <em class="rfc2119">MUST</em> reject with an
       <code>AbortError</code> {{DOMException}}.
@@ -433,26 +546,40 @@ dictionary SignedSectionTrustOutcome {
     <p>
       Cryptographic verification is deterministic over the server HTML before
       browser extensions, page scripts, or post-parse page behavior can modify
-      it. A user agent <em class="rfc2119">SHOULD</em> verify against an
-      original response snapshot captured during navigation. If no such
-      snapshot is available, the user agent <em class="rfc2119">MAY</em>
-      re-request the document from the server, subject to the network and
-      credential constraints in <a href="#network">§ Network, CSP, and
-      privacy model</a>. Given the attributes of a
-      <code>signed-section</code> element and its signed content from that
-      input, the user agent <em class="rfc2119">MUST</em>:
+      it. A user agent <em class="rfc2119">MUST</em> verify source octets. It
+      <em class="rfc2119">SHOULD</em> use an original response snapshot
+      captured during navigation. If no such snapshot is available, it
+      <em class="rfc2119">MUST</em> re-request the document from the server,
+      subject to the network and credential constraints in
+      <a href="#network">§ Network, CSP, and privacy model</a>. If neither
+      source is available, verification fails with
+      <code>source-refetch-failed</code>. A dynamically constructed element
+      with no source representation cannot receive a valid layer-1 result.
+      Before accepting a parsed tree, the user agent
+      <em class="rfc2119">MUST</em> validate the portable parser profile from
+      the source octets and parser diagnostics as specified in
+      [[I-D.grey-htmltrust]]. Given an accepted source representation, the user
+      agent <em class="rfc2119">MUST</em>:
     </p>
     <ol>
+      <li>Require all six v1 attributes, select
+        <code>htmltrust-signature-v1</code>, and validate the exact
+        <code>url</code> or <code>origin</code> scope. Profile selection occurs
+        before canonicalization and has no legacy fallback.</li>
       <li>Extract the canonical signed content of the element, including
         signed semantic attributes, using the canonicalization rules defined
-        in [[I-D.grey-htmltrust]].</li>
+        in [[I-D.grey-htmltrust]]. Reject a signed URL outside
+        <code>htmltrust-safe-url-v1</code>.</li>
       <li>Compute the content hash and compare it against the
         <code>content-hash</code> attribute. If the values do not match,
         verification fails with
         {{SignedSectionCryptoOutcome/valid}} = <code>false</code> and
         {{SignedSectionCryptoOutcome/reason}} = <code>"content-hash-mismatch"</code>.</li>
-      <li>Construct the canonical signing payload as defined in
-        [[I-D.grey-htmltrust]].</li>
+      <li>Canonicalize every direct-child claim, require one strict
+        <code>signed-at</code> value, and construct the complete signing object
+        defined in [[I-D.grey-htmltrust]]. Derive its location from the final
+        response URL and the signed scope, then serialize the object with
+        RFC 8785 JCS.</li>
       <li>Resolve the <code>keyid</code> to a public key using one of the
         methods accepted by the user agent. If resolution fails,
         verification fails with
@@ -464,10 +591,17 @@ dictionary SignedSectionTrustOutcome {
         {{SignedSectionCryptoOutcome/reason}} = <code>"algorithm-not-supported"</code>.</li>
     </ol>
     <p>
+      A successful outcome exposes the accepted profile, scope, and derived
+      location through {{SignedSectionCryptoOutcome}}. Scripts must not infer
+      whole-page integrity from this result. In particular, origin scope
+      permits same-origin replay and the v1 signed-attribute profile covers
+      only the attributes named above.
+    </p>
+    <p>
       Cryptographic verification <em class="rfc2119">MUST NOT</em> contact
       any network endpoint other than those required to resolve the
       <code>keyid</code> or to obtain the source snapshot fallback described
-      above. In particular, no trust directory
+      above. In particular, a trust directory
       <em class="rfc2119">MUST NOT</em> be contacted as part of layer 1.
     </p>
     <p>
@@ -537,10 +671,18 @@ dictionary SignedSectionTrustOutcome {
       cryptographic result, when:
     </p>
     <ul>
-      <li>any of the four required content attributes is added, removed, or
+      <li>any of the six required content attributes is added, removed, or
         changed;</li>
+      <li>a direct-child claim's <code>name</code> or <code>content</code>
+        attribute is added, removed, or changed;</li>
+      <li>a descendant's signed <code>href</code>, <code>src</code>,
+        <code>alt</code>, or <code>aria-label</code> attribute is added,
+        removed, or changed;</li>
       <li>any descendant of the element is inserted, removed, or has its
-        text content mutated; or</li>
+        text content mutated;</li>
+      <li>the source snapshot's document base URL would change because its
+        applicable <code>base</code> element or final response URL changed;
+        or</li>
       <li>the user explicitly requests re-verification via
         {{HTMLSignedSectionElement/verify()}} with
         {{VerifyOptions/force}} = <code>true</code>.</li>
@@ -552,8 +694,8 @@ dictionary SignedSectionTrustOutcome {
       Authoring tools <em class="rfc2119">SHOULD NOT</em> mutate the
       descendants of a <code>signed-section</code> after page load, as
       doing so will make any rendered-content verification stale or invalid;
-      see [[I-D.grey-htmltrust]] for protocol-level mechanisms to mark
-      non-signed decoration.
+      Authoring tools can place runtime decoration outside the signed
+      section; this revision defines no in-band opt-out marker.
     </p>
   </section>
 
@@ -651,10 +793,22 @@ dictionary SignedSectionTrustOutcome {
       normal Service Workers model. User agents that capture an original
       response snapshot during navigation <em class="rfc2119">SHOULD</em> use
       that snapshot for verification in preference to a refetch, because the
-      snapshot represents the server response before page script or extension
-      mutation. Service workers on unrelated origins <em class="rfc2119">MUST
+      snapshot is the decoded navigation response passed to the HTML parser,
+      after any service-worker interception and before page script or extension
+      mutation. A later refetch is a distinct input and
+      <em class="rfc2119">MUST</em> be reported as such. Service workers on
+      unrelated origins <em class="rfc2119">MUST
       NOT</em> be allowed to intercept key or directory fetches outside their
       normal scope.
+    </p>
+    <p>
+      User agents <em class="rfc2119">MUST</em> enforce the resource ceilings
+      in [[I-D.grey-htmltrust]]: 1 MiB per source or signed section, 64 direct
+      claims, 4 KiB per normalized claim token, 64 KiB per key document,
+      256 KiB per endorsement response, three redirects, five seconds per
+      fetch, and four concurrent verifier fetches per document. Exceeding a
+      ceiling <em class="rfc2119">MUST</em> produce
+      <code>resource-limit-exceeded</code> and a non-valid result.
     </p>
   </section>
 
@@ -717,7 +871,9 @@ dictionary SignedSectionTrustOutcome {
       [[I-D.grey-htmltrust]]. Duplicate or malformed normalized claim names
       fail verification before signature verification, so this duplicate
       binding creates an extraction convenience for user interfaces and
-      directories rather than an alternate timestamp authority.
+      directories rather than an alternate timestamp authority. Freshness
+      warnings belong to trust policy. They must not be reported as
+      <code>signature-invalid</code>.
     </p>
   </section>
 
@@ -734,21 +890,25 @@ dictionary SignedSectionTrustOutcome {
   </section>
 
   <section>
-    <h3>Republication and origin binding</h3>
+    <h3>Republication and location binding</h3>
     <p>
-      The signing payload defined in [[I-D.grey-htmltrust]] binds a
-      signature to the origin at which the content is canonically
-      published. User agents <em class="rfc2119">MUST</em> evaluate
-      origin binding as part of layer-1 verification and
-      <em class="rfc2119">MUST</em> report an origin mismatch as a
-      cryptographic failure, not a trust failure. This prevents
-      verbatim copy-and-paste of signed content from one site to another
-      with the original signature preserved.
+      The signing object defined in [[I-D.grey-htmltrust]] binds a signature
+      to the final response URL or its origin, according to the signed
+      <code>signature-scope</code>. User agents
+      <em class="rfc2119">MUST</em> evaluate location binding as part of
+      layer-1 verification. A document URL that does not produce an allowed
+      HTTPS location
+      <em class="rfc2119">MUST</em> produce
+      <code>origin-not-supported</code>. Copying signed content to another
+      location outside the signed scope changes the signing object, so the
+      copied signature produces <code>signature-invalid</code>.
     </p>
     <p>
-      The IETF signing payload retains the legacy field name
-      <code>domain</code>, but that field carries the serialized Web origin:
-      scheme, host, and port. It is not a host-only domain string.
+      URL scope includes the serialized path and query and excludes the
+      fragment. It blocks same-origin replay at another URL. Origin scope is
+      an explicit portability choice and permits that replay. A canonical
+      link, document base URL, or page-supplied URL metadata cannot change
+      either location.
     </p>
   </section>
 </section>
@@ -885,16 +1045,7 @@ dictionary SignedSectionTrustOutcome {
     Community Group Draft status.
   </p>
 
-  <p class="issue" title="Issue 1: Expansion of signed semantic attributes">
-    [[I-D.grey-htmltrust]] now signs canonicalized text plus the
-    provisional semantic attribute list <code>href</code>, <code>src</code>,
-    <code>alt</code>, and <code>aria-label</code>. The Community Group invites
-    input on which additional attributes and element-specific cases should be
-    covered without drifting toward the full-structural signing that made XML
-    Digital Signatures [[XMLDSIG-CORE2]] operationally fragile.
-  </p>
-
-  <p class="issue" title="Issue 2: Runtime DOM mutation versus source verification">
+  <p class="issue" title="Issue 1: Runtime DOM mutation versus source verification">
     Verification prefers the original server HTML response snapshot, with a
     source refetch fallback when no snapshot is available. Common runtime
     decorations — copy-to-clipboard buttons injected into
@@ -905,7 +1056,7 @@ dictionary SignedSectionTrustOutcome {
     excludes a region from canonicalization, paired with authoring guidance.
   </p>
 
-  <p class="issue" title="Issue 3: Default key-resolution preference order">
+  <p class="issue" title="Issue 2: Default key-resolution preference order">
     User agents <em class="rfc2119">MUST</em> accept at least one
     resolution method, but the spec does not yet mandate a preference
     order when a <code>keyid</code> would resolve under more than one
@@ -914,14 +1065,6 @@ dictionary SignedSectionTrustOutcome {
     directory reference) or to leave this entirely to user policy.
   </p>
 
-  <p class="issue" title="Issue 4: Naming of the DOM interface">
-    The interface name <code>HTMLSignedSectionElement</code> follows the
-    HTML Living Standard convention for built-in elements. If the
-    element is instead specified as an autonomous custom element under
-    a stable shadow registry, a different naming convention may apply.
-    Resolution depends on whether HTMLTrust is shipped as a built-in
-    or as a custom element.
-  </p>
 </section>
 
 <section id="conformance-summary">
@@ -935,6 +1078,15 @@ dictionary SignedSectionTrustOutcome {
       <a href="#dom">§ DOM Interface</a>.</li>
     <li>Implement the two-layer processing model defined in
       <a href="#processing-model">§ User-Agent Processing Model</a>.</li>
+    <li>Verify an accepted source snapshot or source refetch, validate the
+      portable parser profile, and expose whether rendered content still
+      matches that input.</li>
+    <li>Invalidate or mark results stale after mutations to signed content,
+      claim metadata, signed semantic attributes, or the source base URL.</li>
+    <li>Use the closed {{SignedSectionFailureReason}} vocabulary and expose
+      no rejected source or canonical bytes to page script.</li>
+    <li>Apply the verifier-fetch privacy rules and consult trust directories
+      only when user, administrator, or embedding policy enables them.</li>
     <li>Treat <code>signed-section</code> as transparent to the
       accessibility tree and apply no chrome-level decoration to its
       rendered box.</li>
@@ -945,7 +1097,7 @@ dictionary SignedSectionTrustOutcome {
     A conforming authoring tool <em class="rfc2119">MUST</em>:
   </p>
   <ul>
-    <li>Emit <code>signed-section</code> elements that include all four
+    <li>Emit <code>signed-section</code> elements that include all six
       required attributes.</li>
     <li>Place claim <code>&lt;meta&gt;</code> elements as direct children of
       the <code>signed-section</code> element, before any other flow
@@ -954,6 +1106,12 @@ dictionary SignedSectionTrustOutcome {
       that conform to the canonicalization and signing rules of
       [[I-D.grey-htmltrust]].</li>
   </ul>
+  <p class="note">
+    The current browser extension and JavaScript library are prototype
+    implementations of the markup and verification protocol. They do not
+    implement the browser-owned {{HTMLSignedSectionElement}} interface or
+    native navigation-response capture required of a conforming user agent.
+  </p>
 </section>
 
 <section id="ack" class="informative">
