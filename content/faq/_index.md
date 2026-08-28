@@ -111,4 +111,4 @@ Not yet. A formal proposal to the W3C for extending HTML with signed sections is
 - Browse the [GitHub repositories](https://github.com/HTMLTrust) for the spec, server, browser extension, and CMS plugins
 - Open issues or pull requests
 - Try the [reference implementations](/implementation/) and provide feedback
-- Contact [jason@jason-grey.com](mailto:jason@jason-grey.com) with questions or collaboration ideas
+- Contact `jason@jason-grey.com` with questions or collaboration ideas

@@ -38,4 +38,4 @@ The full review's "Mismatch Matrix Between Draft and Existing Code/Conformance" 
 
 ## Feedback
 
-File issues on the [htmltrust-spec repository](https://github.com/HTMLTrust/htmltrust-spec) or email jason@jason-grey.com.
+File issues on the [htmltrust-spec repository](https://github.com/HTMLTrust/htmltrust-spec) or email `jason@jason-grey.com`.
