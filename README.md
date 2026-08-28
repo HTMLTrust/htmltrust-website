@@ -68,7 +68,7 @@ repository. From the repository root:
 ```sh
 npm ci --ignore-scripts
 hugo --minify
-go install github.com/HTMLTrust/htmltrust-hugo/cmd/htmltrust-sign@d39ef12d068d6028076d91eedf1a5f98abcd7b8d
+go install github.com/HTMLTrust/htmltrust-hugo/cmd/htmltrust-sign@d656523d13f7ee90a4f810d91bd575829060ce41
 export HTMLTRUST_SIGNING_KEY="$(cat /path/to/ed25519-private-key.pem)"
 htmltrust-sign \
   --dir public \
