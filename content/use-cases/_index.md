@@ -82,4 +82,4 @@ To explore HTMLTrust for your use case:
 1. Read the [specification](/spec/) to understand the technical foundation
 2. Review the [system architecture](/architecture/) for integration patterns
 3. Browse the [reference implementations](/implementation/) for your platform
-4. [Get in touch](mailto:jason@jason-grey.com) to discuss your specific needs
+4. Get in touch at `jason@jason-grey.com` to discuss your specific needs

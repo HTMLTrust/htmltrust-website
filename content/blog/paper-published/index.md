@@ -42,4 +42,4 @@ Alongside the paper, we've published reference implementations:
 
 The paper and its LaTeX source are available in the [htmltrust-spec](https://github.com/HTMLTrust/htmltrust-spec) repository.
 
-We welcome feedback and contributions. Visit the [GitHub repositories](https://github.com/HTMLTrust) to get involved, or reach out at [jason@jason-grey.com](mailto:jason@jason-grey.com).
+We welcome feedback and contributions. Visit the [GitHub repositories](https://github.com/HTMLTrust) to get involved, or reach out at `jason@jason-grey.com`.

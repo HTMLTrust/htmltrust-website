@@ -126,7 +126,7 @@ jobs:
         #
         # This revision delegates canonicalization to the shared Go package and
         # pins golang.org/x/net v0.55.0.
-        run: go install github.com/HTMLTrust/htmltrust-hugo/cmd/htmltrust-sign@d39ef12d068d6028076d91eedf1a5f98abcd7b8d
+        run: go install github.com/HTMLTrust/htmltrust-hugo/cmd/htmltrust-sign@d656523d13f7ee90a4f810d91bd575829060ce41
 
       - name: Sign content
         env:

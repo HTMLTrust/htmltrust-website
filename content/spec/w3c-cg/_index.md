@@ -35,4 +35,4 @@ These are the items most likely to draw browser-reviewer pushback. The full revi
 
 ## Feedback
 
-File issues on the [htmltrust-spec repository](https://github.com/HTMLTrust/htmltrust-spec) or email jason@jason-grey.com.
+File issues on the [htmltrust-spec repository](https://github.com/HTMLTrust/htmltrust-spec) or email `jason@jason-grey.com`.

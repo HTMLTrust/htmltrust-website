@@ -121,4 +121,4 @@ We have strong preferences but have not yet committed normatively. Community fee
 - Browse the [GitHub repositories](https://github.com/HTMLTrust)
 - Open issues or pull requests on any repo
 - Try the reference implementations and report what breaks
-- Contact [jason@jason-grey.com](mailto:jason@jason-grey.com) for collaboration
+- Contact `jason@jason-grey.com` for collaboration
