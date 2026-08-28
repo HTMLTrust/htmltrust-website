@@ -115,6 +115,9 @@ jobs:
           # Match the pinned signer's go.mod and retain current standard-library
           # security fixes.
           go-version: "1.25"
+          # This job downloads only the built site artifact, so no go.mod is
+          # present for setup-go's dependency cache.
+          cache: false
 
       - name: Install htmltrust-sign
         # Pinned to an immutable commit. With `@latest`, any push to
