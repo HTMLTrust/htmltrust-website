@@ -1,9 +1,9 @@
 {
-  "name": "hugo-blox-documentation-starter",
+  "name": "htmltrust-website",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@10.14.0",
-  "description": "Documentation starter template for Hugo Blox with Tailwind CSS v4",
+  "packageManager": "npm@10.9.2",
+  "description": "HTMLTrust documentation and project website",
   "scripts": {
     "dev": "hugo server --disableFastRender",
     "build": "hugo --minify && npm run pagefind",

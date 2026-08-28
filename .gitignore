@@ -10,8 +10,7 @@ hugo_stats.json
 # Hugo lock file
 .hugo_build.lock
 
-# Node deps (Hugo Blox needs preact, tailwindcss, pagefind at build time —
-# CI runs `npm install` to fetch them)
+# Node dependencies used by Hugo Blox, Tailwind, and Pagefind
 node_modules/
 
 # Editor files

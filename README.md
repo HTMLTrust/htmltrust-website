@@ -21,7 +21,7 @@ Clone and run the site:
 ```sh
 git clone https://github.com/HTMLTrust/htmltrust-website.git
 cd htmltrust-website
-npm ci
+npm ci --ignore-scripts
 npm run dev
 ```
 
@@ -29,8 +29,8 @@ Open <http://localhost:1313/>. Hugo downloads the pinned Hugo Blox modules on
 the first run, so the initial build needs network access.
 
 The `npm ci` command uses the committed `package-lock.json`. It installs the
-Tailwind and Pagefind tools used by the build. `pnpm-lock.yaml` is retained for
-Hugo Blox development, while CI and the documented path use npm.
+Tailwind and Pagefind tools used by the build. npm is the repository's package
+manager; the `package-lock.json` is the only JavaScript lockfile committed here.
 
 ## Build and checks
 
@@ -66,14 +66,14 @@ immutable `htmltrust-hugo` signer revision used in CI. Keep the key outside the
 repository. From the repository root:
 
 ```sh
-npm ci
+npm ci --ignore-scripts
 hugo --minify
 go install github.com/HTMLTrust/htmltrust-hugo/cmd/htmltrust-sign@d39ef12d068d6028076d91eedf1a5f98abcd7b8d
 export HTMLTRUST_SIGNING_KEY="$(cat /path/to/ed25519-private-key.pem)"
 htmltrust-sign \
   --dir public \
   --keyid did:web:jason-grey.com \
-  --domain https://www.htmltrust.org
+  --domain www.htmltrust.org
 ```
 
 The key must be a PEM-encoded PKCS#8 Ed25519 private key. The signer rewrites
