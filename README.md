@@ -123,6 +123,8 @@ scripts/sync-spec-artifacts.sh --check
 ```
 
 For a spec checkout elsewhere, pass its path with `--source /path/to/htmltrust-spec`.
+The website CI workflow pins the exact spec revision currently published. When
+refreshing these files, update that `ref` in the same pull request.
 
 The site wraps signed pages through
 `layouts/_partials/htmltrust-signed-section.html`. Set this front matter on a
