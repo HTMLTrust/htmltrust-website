@@ -14,102 +14,123 @@ HTMLTrust is a system of small, independent pieces. Authors sign content. CMSes 
 
 ## The whole system, one diagram
 
-```mermaid
-flowchart TD
-    A((Author)) -->|manage keys| B[Web browser]
-    A -->|author content| C[CMS]
-    B -->|provide public key| C
-    C -->|request signature| B
-    C -->|deliver page| P[/"Pages with<br/>signed blocks"/]
-    P -->|viewed| Br[Reader's browser]
-    P -->|crawled| Cr[Crawler]
-    Br -->|verify locally| Val{{Trust score}}
-    Cr -->|extract &amp; verify| Re[Researcher]
-    C -. publish keys &amp; hashes .-> Dir[(Trust directories)]
-    Br -. query reputation .-> Dir
-    Re -. flag bad keys .-> Dir
-```
+{{< diagram label="Figure 1" alt="An author's private key stays in their browser. The CMS asks the browser to sign, publishes a page with signed blocks, which readers and crawlers verify locally. Trust directories sit off to the side and are queried only optionally." caption="Solid lines are required paths. Dotted lines are optional directory traffic: remove every directory from this diagram and signature verification still works." >}}
+    Author
+      |
+      | writes
+      v
+  +--------------+   asks for a signature    +----------------------+
+  |              | ------------------------> |   Author's browser   |
+  |     CMS      |                           |   holds the private  |
+  |              | <------------------------ |   key, which never   |
+  +--------------+   returns the signature   |   leaves the browser |
+      |                                      +----------------------+
+      | publishes
+      v
+  +------------------------------+
+  |   Page with signed blocks    |
+  +------------------------------+
+      |                        |
+      | read                   | crawled
+      v                        v
+  +----------------+     +----------------+
+  | Reader browser |     |    Crawler     |
+  +----------------+     +----------------+
+      |                        |
+      | verify locally         | verify at scale
+      v                        v
+    trust score           research, flags
+      :                        :
+      : query reputation       : file reports
+      v                        v
+  +--------------------------------------------+
+  |   Federated trust directories  (0 to n)    |
+  +--------------------------------------------+
+{{< /diagram >}}
 
 ## Two layers, kept separate
 
-```mermaid
-flowchart TB
-    subgraph L1["🔒 Layer 1 — Cryptographic verification (local)"]
-        C1[Canonicalize content] --> H1[Hash]
-        H1 --> S1[Verify signature against resolved key]
-        S1 --> R1{Valid?}
-    end
-    subgraph L2["⚖️ Layer 2 — Trust decision (user policy)"]
-        P1[Trust list] --> D1[Score]
-        P2[Endorsements] --> D1
-        P3[Directory reputation] --> D1
-        D1 --> UI[UI indicator]
-    end
-    R1 -- "yes" --> L2
-    R1 -- "no" --> X[Reject]
-```
+{{< diagram label="Figure 2" alt="Layer one canonicalizes, hashes, resolves the key and verifies the signature, producing a valid or invalid result. Only a valid result reaches layer two, which combines the reader's trust list, endorsements and directory reputation into a graduated score." caption="An invalid signature ends at Layer 1. No amount of reputation promotes it." >}}
+  LAYER 1   cryptographic verification
+            local, deterministic, no network call beyond key resolution
 
-A signature either verifies cryptographically or it does not — that part is binary, local, and identical across implementations. **Trust** is a matter of degree, and each user agent applies its own policy on top.
+     canonicalize -- hash -- resolve keyid -- verify signature
+                                                  |
+                     +----------------------------+
+                     |                            |
+                  invalid                       valid
+                     |                            |
+                     v                            v
+                  reject                    on to Layer 2
 
-## Author flow — signing
+  LAYER 2   trust decision
+            local, and different for every reader by design
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant A as Author
-    participant B as Browser (key holder)
-    participant C as CMS
-    participant D as Directory (optional)
-    A->>C: Write content
-    C->>C: Canonicalize text
-    C->>C: Compute content-hash + claims-hash
-    C->>B: Request signature over payload
-    B->>B: Sign with private key
-    B-->>C: signature
-    C->>C: Embed in signed-section
-    C-->>A: Publish page
-    C-->>D: Publish hash + keyid (optional)
-```
+     personal trust list  ---+
+     endorsements         ---+---- graduated score ---- indicator
+     directory reputation ---+
+{{< /diagram >}}
+
+A signature either verifies cryptographically or it does not. That part is binary, local, and identical across implementations. Trust is a matter of degree, and each user agent applies its own policy on top. [The trust network](/trust-network/) documents the reference policy, including the arithmetic and what happens when directories disagree.
+
+## Author flow: signing
+
+1. **Author → CMS.** Write the content as normal.
+2. **CMS.** Canonicalize the text of the region to be signed.
+3. **CMS.** Compute the content hash and the claims hash.
+4. **CMS → browser.** Ask the author's browser to sign the canonical payload.
+5. **Browser.** Sign with the private key, which never leaves the browser.
+6. **Browser → CMS.** Return the signature only.
+7. **CMS.** Embed the signature, key identifier, content hash, and algorithm on the `<signed-section>` element.
+8. **CMS → author.** Publish the page.
+9. **CMS → directory.** Optionally publish the content hash and key identifier. Skipping this step changes nothing about whether the page verifies.
 
 The private key never leaves the author's browser. The CMS asks the browser to sign a canonical payload, receives the signature, and embeds it in the published HTML.
 
-## Reader flow — verifying
+## Reader flow: verifying
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant U as Reader's browser
-    participant P as Page origin
-    participant K as Key resolver
-    participant D as Directory (optional)
-    U->>P: GET page
-    P-->>U: HTML with signed-section
-    U->>U: Canonicalize text → hash
-    U->>K: Resolve keyid
-    K-->>U: Public key
-    U->>U: Verify signature (local)
-    U->>D: Query reputation / endorsements (optional)
-    D-->>U: Endorsements + reputation
-    U->>U: Apply user trust policy → score
-```
+1. **Reader → page origin.** `GET` the page.
+2. **Page origin → reader.** HTML containing one or more `<signed-section>` elements.
+3. **Reader.** Canonicalize the signed region and hash it.
+4. **Reader → key resolver.** Resolve the `keyid`, by DID, key URL, or directory entry.
+5. **Key resolver → reader.** The public key.
+6. **Reader.** Verify the signature locally. This is the yes-or-no answer.
+7. **Reader → directory.** Optionally query reputation and endorsements from each subscribed directory.
+8. **Directory → reader.** Reputation and endorsements, or nothing at all if it is unreachable.
+9. **Reader.** Apply the local trust policy and render an indicator.
 
-Cryptographic verification is offline-capable once the public key is cached. The directory query is optional and only feeds the *trust score*, not the signature check.
+Cryptographic verification is offline-capable once the public key is cached. Steps 7 and 8 feed the trust score only. Remove them and the signature check is unaffected.
 
 ## Domain binding
 
-```mermaid
-flowchart LR
-    O["`author.com
-    *signed content*`"] -. "mirror without permission" .-> M[scraper.com]
-    M --> X["`❌ Signature
-    fails domain bind`"]
-    O --> R["`republisher.com
-    *wraps with own sig*`"] --> V[✅ Attribution chain]
-    style X stroke:#ef4444,color:#ef4444
-    style V stroke:#4ade80,color:#4ade80
-```
+{{< diagram label="Figure 3" alt="Copying signed bytes to another domain makes the signature fail, because the canonical payload binds the publication origin. Wrapping the original section in an outer signature preserves both attributions." caption="The same copy operation gives a different result depending on whether the republisher signs their own wrapper." >}}
+  UNAUTHORIZED MIRROR
 
-A signature is bound to a publication origin via the canonical payload. Scrapers and mirror sites can copy the bytes, but the signature will not validate at a different origin. Legitimate republishing is supported via a separate mechanism: a republisher wraps the original `<signed-section>` in their own outer signature, preserving the original while adding an attribution chain.
+    author.com  publishes a signed section
+        |
+        |  bytes copied verbatim
+        v
+    scraper.com  serves the identical bytes
+        |
+        v
+    signature fails: the canonical payload binds the publication
+    origin, and the origin in the payload no longer matches the host
+
+  DELIBERATE REPUBLICATION
+
+    author.com  publishes a signed section
+        |
+        |  republisher wraps the original section, unmodified,
+        |  inside a section it signs with its own key
+        v
+    republisher.com  serves inner section plus outer signature
+        |
+        v
+    both verify: the inner signature attributes the author,
+    the outer one attributes the republisher
+{{< /diagram >}}
+
+A signature is bound to a publication origin via the canonical payload. Scrapers and mirror sites can copy the bytes, but the signature will not validate at a different origin. Legitimate republishing has its own mechanism: a republisher wraps the original `<signed-section>` in their own outer signature, preserving the original while adding an attribution chain. Formalizing that chain is [open work](/implementation/#open-design-questions).
 
 ## The directory's role
 
@@ -122,7 +143,9 @@ A trust directory MAY:
 
 Federation means **many directories can coexist**, users choose which they trust at the higher level, and verification of a signature never requires contacting one. A directory is a convenience, never an authority.
 
+[The trust network](/trust-network/) covers what a directory actually serves, how a reader weights several of them, what happens when two disagree, and what an attacker gets for running one.
+
 ## Next
 
-- **[Spec details](/spec/)** — element, attributes, canonicalization
-- **[Reference implementations](/implementation/)** — what's running today
+- **[Spec details](/spec/)** for the element, its attributes, and canonicalization
+- **[Reference implementations](/implementation/)** for what is running today, per component

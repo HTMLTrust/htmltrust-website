@@ -1,13 +1,16 @@
 ---
-title: 'Research paper published: Toward Decentralized Trust and Verifiable Content on the Web'
-summary: 'The foundational HTMLTrust research paper is now available.'
+title: 'First draft of the HTMLTrust paper: Toward Decentralized Trust and Verifiable Content on the Web'
+summary: 'The April 2026 announcement of the founding HTMLTrust draft paper, kept online as a record. Superseded: this describes an early draft, and the paper was never published as this post claimed.'
 date: 2026-04-01
+lastmod: 2026-09-03
+toc: false
 authors:
   - jason
 tags:
   - paper
   - specification
   - announcement
+  - superseded
 htmltrust:
   sign: true
   claims:
@@ -16,7 +19,20 @@ htmltrust:
     ai-assistance: 'Human+AI'
 ---
 
-We're pleased to share the publication of *Toward Decentralized Trust and Verifiable Content on the Web*, the paper that lays out the technical foundation for the HTMLTrust project.
+{{< notice label="Superseded, kept for the record" >}}
+**This post is from 1 April 2026 and describes a very early draft.** It is left at its original address rather than deleted, because a project about verifiable authorship should not quietly rewrite its own history. Read it as a snapshot of what the project believed in April, not as current information.
+
+What has changed since, as of 3 September 2026:
+
+- **The paper was never published anywhere.** The original title of this post said it was, which was wrong at the time and is worth stating plainly. It was submitted to arXiv and declined. The current draft is an eleven-page revision under external review, and it will get a citable DOI through Zenodo rather than a preprint server.
+- **The claims in this post predate the evidence.** Everything here was written before any corpus study existed. The measured results, including the five-port interoperability figures, arrived months later and are described with their dates on the [implementation page](/implementation/).
+- **The reference implementations described below have moved on considerably**, including a consolidation of canonicalization onto a single Rust core. What is actually running, and what is merely built, is listed per component on the [implementation page](/implementation/).
+- **The specification is now two documents**, an [IETF Internet-Draft](/spec/ietf-draft/) for the wire protocol and a [W3C Community Group Report](/spec/w3c-cg/) for the HTML integration. Neither has been submitted to its standards body.
+
+For current material, start with [the specification](/spec/) or [the trust network](/trust-network/).
+{{< /notice >}}
+
+We're pleased to share *Toward Decentralized Trust and Verifiable Content on the Web*, the paper that lays out the technical foundation for the HTMLTrust project.
 
 ## Abstract
 
