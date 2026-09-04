@@ -15,7 +15,7 @@ The HTMLTrust specification is small on purpose. It defines:
 1. A new `<signed-section>` HTML element
 2. Four required attributes carrying the signature, key reference, content hash, and algorithm
 3. A canonical signing payload bound to a publication origin
-4. An 8-phase canonicalization algorithm so the same content hashes to the same value regardless of which tool produced it
+4. A four-step text normalization so the same content hashes to the same value regardless of which tool produced it
 5. Pluggable key resolution and optional federated trust directories
 6. A signed-JSON endorsement format for third-party attestations
 
@@ -95,20 +95,20 @@ The output of Stage 1 is a single canonical string consisting of readable words,
 
 > **Open design point.** Stage 1 is being firmed up. The rules above reflect the current direction but are not yet normative. Specifically: the exact list of block-level elements, the treatment of tables (cell separators?), the handling of phrasing-content `<br>` inside inline contexts, and the question of whether to preserve any structural attributes are all subjects of active discussion. Community input is welcome via the [spec repository](https://github.com/HTMLTrust/htmltrust-spec).
 
-### Stage 2: text canonicalization (8 phases)
+### Stage 2: text normalization (four steps)
 
-To ensure the same Stage 1 output always hashes to the same value regardless of which tool produced the upstream HTML, HTMLTrust defines an 8-phase text canonicalization algorithm:
+To ensure the same Stage 1 output always hashes to the same value regardless of which tool produced the upstream HTML, the draft defines `normalize_text` as four steps, applied in order: NFKC, strip formatting characters, map whitespace, normalize punctuation. The table below breaks those four steps into the individual operations, grouped by the draft step each belongs to. `normalize_text` performs no trimming; leading and trailing whitespace at a block boundary is removed once the whole block has been assembled, because a block's edge is often split across several text nodes.
 
-| Phase | What it does |
+| Operation | Draft step | What it does |
 |---|---|
-| 1. NFKC | Unicode normalize: ligatures, fullwidth/halfwidth, presentation forms |
-| 2. Whitespace | All Unicode whitespace → ASCII; collapse runs; trim |
-| 3. Quotation marks | Curly, guillemets, CJK brackets → ASCII `"` and `'` |
-| 4. Dashes | En, em, figure, non-breaking → ASCII `-` |
-| 5. Punctuation | Ellipsis `…` → `...`; minus sign → hyphen-minus |
-| 6. Strip invisibles | Remove ZWSP, BOM, variation selectors, tatweel |
-| 7. Bidi | Strip bidi controls; use the HTML `dir` attribute |
-| 8. Language | Preserve semantic ZWNJ/ZWJ for Indic, Arabic, emoji |
+| NFKC | 1 | Unicode normalize: ligatures, fullwidth and halfwidth forms, presentation forms |
+| Whitespace | 3 | All Unicode whitespace to ASCII space; runs collapsed |
+| Quotation marks | 4 | Curly quotes, guillemets, CJK brackets to ASCII `"` and `'` |
+| Dashes | 4 | En, em, figure and non-breaking dashes to ASCII `-` |
+| Other punctuation | 4 | Ellipsis to `...`; minus sign to hyphen-minus |
+| Strip invisibles | 2 | Remove ZWSP, BOM, variation selectors, tatweel |
+| Bidi controls | 2 | Strip bidi controls; the HTML `dir` attribute carries direction |
+| Script joiners | 2 | Keep semantic ZWNJ and ZWJ for Indic scripts, Arabic and emoji |
 
 JavaScript, Go, PHP, Rust and Python all produce *identical bytes* for the shared conformance corpus, which is 130 fixtures at v0.3.0. They do so by binding one Rust core rather than by reimplementing the algorithm; five independent ports agreeing byte-for-byte is the earlier result that showed these rules are precise enough to reimplement at all. See [htmltrust-canonicalization](https://github.com/HTMLTrust/htmltrust-canonicalization) and the [implementation page](/implementation/) for the distinction.
 
