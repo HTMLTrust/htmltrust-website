@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="{{ or site.Language.Locale "en" }}">
+<head>
+  {{ partial "head.html" . }}
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div class="page">
+    {{ partial "masthead.html" . }}
+    <main id="content"{{ if .Params.numbered }} class="numbered"{{ end }}>
+      {{ block "main" . }}{{ end }}
+    </main>
+    {{ partial "site-footer.html" . }}
+  </div>
+</body>
+</html>

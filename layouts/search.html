@@ -1,0 +1,124 @@
+{{ define "main" }}
+<article>
+  <header class="page-header">
+    <h1>{{ .Title }}</h1>
+    {{- with .Params.description }}
+    <p class="page-header__description">{{ . | markdownify }}</p>
+    {{- end }}
+  </header>
+
+  <div class="prose">
+    {{ .Content }}
+
+    <form class="search" role="search" action="" onsubmit="return false">
+      <label class="search__label" for="q">Search this site</label>
+      <input type="search" id="q" name="q" autocomplete="off" autocapitalize="off"
+             spellcheck="false" placeholder="canonicalization, endorsement, keyid">
+    </form>
+
+    <p class="search__status" id="search-status" role="status" aria-live="polite"></p>
+    <ol class="entries" id="search-results"></ol>
+
+    <noscript>
+      <p>Search needs JavaScript. Without it, the <a href="{{ "/spec/" | relURL }}">specification</a>,
+      <a href="{{ "/trust-network/" | relURL }}">trust network</a> and
+      <a href="{{ "/implementation/" | relURL }}">implementation</a> pages cover most of the site,
+      and every page is in the <a href="{{ "/sitemap.xml" | relURL }}">sitemap</a>.</p>
+    </noscript>
+  </div>
+</article>
+
+{{/*
+  Pagefind's own JS API, not its prebuilt UI: it lets the results use this
+  site's markup and needs no extra stylesheet. Loaded only on this page, so
+  every other page on the site ships no script at all.
+
+  The index does not exist until `pagefind --site public` has run, which
+  happens after `hugo` in the build. Expect this page to find nothing when
+  running `hugo server` against a working tree.
+*/}}
+<script type="module">
+  const input = document.getElementById("q");
+  const results = document.getElementById("search-results");
+  const status = document.getElementById("search-status");
+
+  let pagefind = null;
+  let generation = 0;
+
+  async function load() {
+    if (pagefind) return pagefind;
+    try {
+      pagefind = await import("{{ "/pagefind/pagefind.js" | relURL }}");
+      await pagefind.options({ excerptLength: 30 });
+      return pagefind;
+    } catch (err) {
+      status.textContent =
+        "The search index is not available on this build. Try the navigation above.";
+      return null;
+    }
+  }
+
+  function render(items) {
+    results.replaceChildren();
+    for (const item of items) {
+      const li = document.createElement("li");
+
+      const h = document.createElement("h2");
+      const a = document.createElement("a");
+      a.href = item.url;
+      a.textContent = item.meta?.title || item.url;
+      h.append(a);
+
+      const p = document.createElement("p");
+      p.className = "entries__summary";
+      // Pagefind returns an excerpt with <mark> around matches. Assigning it
+      // as HTML is safe here: it is built from this site's own content at
+      // deploy time, not from anything the visitor typed.
+      p.innerHTML = item.excerpt;
+
+      li.append(h, p);
+      results.append(li);
+    }
+  }
+
+  async function run(query) {
+    const mine = ++generation;
+    if (query.trim().length < 2) {
+      results.replaceChildren();
+      status.textContent = "";
+      return;
+    }
+
+    const pf = await load();
+    if (!pf) return;
+
+    status.textContent = "Searching...";
+    const search = await pf.search(query);
+    // A slower earlier query must not overwrite a newer one's results.
+    if (mine !== generation) return;
+
+    const items = await Promise.all(search.results.slice(0, 20).map((r) => r.data()));
+    if (mine !== generation) return;
+
+    const n = search.results.length;
+    status.textContent = n === 0
+      ? `No matches for “${query}”.`
+      : `${n} ${n === 1 ? "page matches" : "pages match"}${n > 20 ? ", showing the first 20" : ""}.`;
+    render(items);
+  }
+
+  let timer;
+  input.addEventListener("input", (e) => {
+    clearTimeout(timer);
+    const value = e.target.value;
+    timer = setTimeout(() => run(value), 150);
+  });
+
+  // Support /search/?q=term so a result can be linked to.
+  const initial = new URLSearchParams(location.search).get("q");
+  if (initial) {
+    input.value = initial;
+    run(initial);
+  }
+</script>
+{{ end }}

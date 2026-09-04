@@ -1,9 +1,18 @@
 # HTMLTrust website
 
 This repository builds [htmltrust.org](https://www.htmltrust.org), the public
-documentation and project site for HTMLTrust. Hugo renders the content, Hugo
-Modules provide the theme and signing partial, and Pagefind creates the local
-search index.
+documentation and project site for HTMLTrust. Hugo renders the content, one Hugo
+Module (`htmltrust-hugo`) provides the signing partial, and Pagefind creates the
+local search index.
+
+There is no theme. Layouts, partials and a single hand-written stylesheet live
+in this repository, and the published pages ship no JavaScript except on
+`/search/`. That is a deliberate constraint rather than minimalism for its own
+sake: script that alters a page after load alters the DOM inside
+`<signed-section>`, and the signature then describes content the reader never
+saw. The site previously used a Tailwind-based theme and hit exactly that
+failure twice, through an injected code-block copy button and through
+client-rendered diagrams.
 
 ## Quick start
 
@@ -25,12 +34,15 @@ npm ci --ignore-scripts
 npm run dev
 ```
 
-Open <http://localhost:1313/>. Hugo downloads the pinned Hugo Blox modules on
-the first run, so the initial build needs network access.
+Open <http://localhost:1313/>. Hugo downloads the pinned `htmltrust-hugo`
+module on the first run, so the initial build needs network access.
 
-The `npm ci` command uses the committed `package-lock.json`. It installs the
-Tailwind and Pagefind tools used by the build. npm is the repository's package
-manager; the `package-lock.json` is the only JavaScript lockfile committed here.
+The `npm ci` command uses the committed `package-lock.json`, which contains
+Pagefind and nothing else. npm is the repository's package manager; the
+`package-lock.json` is the only JavaScript lockfile committed here.
+
+Site search will find nothing under `npm run dev`. The index is built by
+Pagefind after Hugo, so `/search/` only works against a completed build.
 
 ## Build and checks
 
@@ -138,6 +150,45 @@ htmltrust:
     license: CC-BY-4.0
 ```
 
+That partial is a copy of the one in the `htmltrust-hugo` module, kept locally
+because site layouts override module layouts. If the module's version changes,
+copy it across rather than letting the two drift.
+
+### Front matter the layouts read
+
+| Key | Effect |
+|---|---|
+| `description` | Standfirst under the title, and the page's meta description |
+| `numbered: true` | Numbers `h2` and `h3` headings as `1.`, `1.1`, the way a paper does |
+| `toc: false` | Suppresses the contents list, which otherwise appears above four headings |
+| `authors` | Slugs matching files in `data/authors/`, rendered in the byline |
+| `hero`, `facts` | Home page only: the opening block and the figures beneath it |
+
+### Shortcodes
+
+Two, both deliberately plain.
+
+`notice` is a labelled callout. It renders inside the page body, so on a signed
+page it sits inside `<signed-section>` and is covered by the signature, which is
+what you want for a notice about the document itself.
+
+```text
+{{%/* notice label="Superseded" */%}}
+Body text, markdown.
+{{%/* /notice */%}}
+```
+
+`diagram` is a static monospace figure with a caption and an `aria-label`. Use
+it instead of a diagram library. Its body bypasses the markdown parser, so
+blank lines are safe, and the body is HTML-escaped, so arrows may contain `<`
+and `>`.
+
+```text
+{{%/* diagram label="Figure 1" alt="short description" caption="Caption." */%}}
+  a --> b
+{{%/* /diagram */%}}
+```
+
 ## Browser canonicalization asset
 
 `static/canon-test.js` is a zero-dependency browser bundle of
@@ -168,8 +219,8 @@ git clone https://github.com/HTMLTrust/htmltrust-e2e.git
 git clone https://github.com/HTMLTrust/htmltrust-website.git
 ```
 
-The website imports `htmltrust-hugo` and Hugo Blox through Go modules, so sibling
-directories are useful for source review and coordinated changes. They are not
+The website imports `htmltrust-hugo` as a Go module, so sibling directories are
+useful for source review and coordinated changes. They are not
 required for a normal website build. For the integrated flow, build this site
 to `public/`, run the reference server and CMS according to their READMEs, and
 use the browser client or browser extension to verify the signed HTML.
@@ -178,10 +229,13 @@ use the browser client or browser extension to verify the signed HTML.
 
 ```text
 content/                 Markdown pages and front matter
-layouts/                 Site overrides and HTMLTrust signing partial
-config/_default/         Hugo and Hugo Blox configuration
-static/                  Files copied into the published site
-assets/                  Theme and JavaScript assets
+layouts/                 Every template: baseof, home, single, list, 404,
+                         search, partials, shortcodes, markup render hooks,
+                         and the HTMLTrust signing partial
+assets/css/main.css      The site's only stylesheet
+config/_default/         Hugo configuration
+data/authors/            Author details used by the byline
+static/                  Files copied into the published site verbatim
 .github/workflows/ci.yml Build, sign, verify, and deploy workflow
 ```
 

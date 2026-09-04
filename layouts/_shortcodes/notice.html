@@ -1,0 +1,17 @@
+{{- /*
+notice.html — a labelled callout.
+
+    {{< notice label="Early draft" >}}
+    Body text, markdown.
+    {{< /notice >}}
+
+Rendered inside the page body, which means it sits inside <signed-section> on
+pages that opt into signing and is therefore covered by the signature. That is
+deliberate: a notice about a document is part of what the author attests to.
+*/ -}}
+<div class="notice">
+  {{- with .Get "label" }}
+  <span class="notice__label">{{ . }}</span>
+  {{- end }}
+  {{ .Inner | markdownify }}
+</div>

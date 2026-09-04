@@ -1,0 +1,5 @@
+{{- /* render-heading.html — headings get an id and a quiet anchor link. */ -}}
+<h{{ .Level }} id="{{ .Anchor }}">
+  {{- .Text -}}
+  {{- if le .Level 3 }}<a class="heading-anchor" href="#{{ .Anchor }}" aria-label="Link to this section">&#182;</a>{{ end -}}
+</h{{ .Level }}>

@@ -1,0 +1,11 @@
+{{ define "main" }}
+<article>
+  <header class="page-header">
+    <h1>Page not found</h1>
+    <p class="page-header__description">There is nothing at this address.</p>
+  </header>
+  <div class="prose">
+    <p>Try the <a href="{{ "/spec/" | relURL }}">specification</a>, the <a href="{{ "/trust-network/" | relURL }}">trust network</a>, or the <a href="{{ "/" | relURL }}">front page</a>.</p>
+  </div>
+</article>
+{{ end }}
