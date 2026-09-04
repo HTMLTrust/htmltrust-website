@@ -112,7 +112,7 @@ and verify its signature with the protocol rules.
 | Trust directory server | Reference implementation | 103 tests, OpenAPI lint, 12 conformance fixtures, v1 smoke check |
 | Browser extension, Chrome | Verified as packaged | MV3 extension loaded and driven in Chromium automation |
 | Browser extension, Firefox and Safari | Builds, unproven | Bundles within size limits; not yet loaded as installed extensions |
-| WordPress plugin | Reference implementation | Signs in the editor with a browser-held key; verifies via the public key endpoint |
+| WordPress plugin | Built, integration broken | Cannot complete a sign against the current trust directory server, a protocol version skew; verified end to end only against a pre-v1 server revision. A fix is in an open PR |
 | Hugo module | In production | Signs this site at build time |
 | IETF Internet-Draft | Pre-submission | Not posted to the datatracker |
 | W3C CG Report | Pre-submission | Not submitted to a Community Group |
