@@ -110,7 +110,7 @@ To ensure the same Stage 1 output always hashes to the same value regardless of 
 | 7. Bidi | Strip bidi controls; use the HTML `dir` attribute |
 | 8. Language | Preserve semantic ZWNJ/ZWJ for Indic, Arabic, emoji |
 
-JavaScript, Go, PHP, Rust, and Python implementations produce *identical bytes* for the shared conformance corpus. See [htmltrust-canonicalization](https://github.com/HTMLTrust/htmltrust-canonicalization) for the libraries and test suite.
+JavaScript, Go, PHP, Rust and Python all produce *identical bytes* for the shared conformance corpus, which is 130 fixtures at v0.3.0. They do so by binding one Rust core rather than by reimplementing the algorithm; five independent ports agreeing byte-for-byte is the earlier result that showed these rules are precise enough to reimplement at all. See [htmltrust-canonicalization](https://github.com/HTMLTrust/htmltrust-canonicalization) and the [implementation page](/implementation/) for the distinction.
 
 ## Pluggable key resolution
 
