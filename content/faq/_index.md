@@ -62,7 +62,9 @@ HTMLTrust degrades gracefully. Unsigned or unrecognized `<signed-section>` eleme
 
 This is a real, observed issue: HTMLTrust signs the **server HTML** that leaves the publishing pipeline. Browser verifiers should use the original response snapshot before page scripts or browser extensions can mutate it; if that snapshot is unavailable, they can re-request the document from the same origin. Live-DOM verification is a separate state because anything inside a `<signed-section>` can be changed after load.
 
-We hit this on our own site initially: the Hugo Blox docs theme injects a `<button class="copy-button">Copy</button>` into every `<pre>` code block at runtime. The signer never saw the button, so the canonical text the verifier reads includes extra "Copy" tokens that aren't in the hash.
+This site hit it twice. The theme it previously used injected a `<button class="copy-button">Copy</button>` into every `<pre>` block at runtime, so the canonical text a verifier read contained "Copy" tokens the signer had never seen. The architecture page then did it again with client-rendered diagrams, which replaced each diagram's source with generated markup inside a signed region after load.
+
+Both are fixed the same way, by removing the runtime step: this site now ships no JavaScript on any signed page, and its diagrams are static text that the signer hashes along with everything else. That is the general lesson. If a signed region's final form depends on script, the signature describes something the reader never saw.
 
 Other common culprits:
 
@@ -81,7 +83,7 @@ A mutation-skip marker such as `data-htmltrust-ignore="true"` has no normative e
 
 ## What browsers are supported?
 
-A reference browser extension is available for **Chrome**, Firefox, and Safari. Chromium-based browsers such as Edge use the Chrome build. Eventually, the goal is native browser support via a W3C standard.
+A reference extension builds for **Chrome**, Firefox, and Safari. Only the Chrome build is currently exercised end to end as an installed extension in automation; the Firefox and Safari bundles build and pass lint but have not been driven as installed extensions yet. Chromium-based browsers such as Edge use the Chrome build. See [reference implementations](/implementation/) for per-component verification status. The eventual goal is native browser support through a W3C standard, which is why the extension is a stepping stone rather than the destination.
 
 ## What CMS platforms are supported?
 
@@ -104,7 +106,9 @@ HTMLTrust metadata can include explicit AI training preferences aligned with eme
 
 ## Is HTMLTrust an official web standard?
 
-Not yet. A formal proposal to the W3C for extending HTML with signed sections is part of the project's roadmap. The current work establishes the technical foundation and reference implementations.
+No. Two drafts exist and neither has been submitted: an [IETF Internet-Draft](/spec/ietf-draft/) for the wire protocol, and a [W3C Community Group Report](/spec/w3c-cg/) for the HTML and DOM integration. Both are published here for review before they go anywhere official.
+
+The sequencing is deliberate. Browser-native `<signed-section>` is the hardest path and the last one, since browser vendors have good reason to be sceptical of signed-content proposals after Signed HTTP Exchanges. The nearer target is crawl-time verification by a search or answer engine, which needs no browser change to be useful and produces the operational evidence a standards discussion actually wants.
 
 ## How can I get involved?
 

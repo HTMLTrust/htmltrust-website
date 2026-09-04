@@ -1,6 +1,6 @@
 ---
 title: 'Reference implementations'
-description: 'Open-source code for browsers, CMS integrations, trust directories, and canonicalization.'
+description: 'Reference code for browsers, CMS integrations, trust directories, and canonicalization.'
 date: 2026-05-13
 htmltrust:
   sign: true
@@ -14,7 +14,7 @@ Reference implementations exist for every layer of the system and live under the
 
 ## Canonicalization libraries
 
-Every implementation passes the same conformance corpus and produces the same canonical output.
+Five language ports were written independently against the specification, and produced byte-identical canonical output on a shared conformance corpus. That result is the reason the algorithm is specifiable at all: it demonstrates that the written rules are complete enough for separate implementers to agree on the bytes, rather than agreeing because they shared code.
 
 | Language | Repo | Dependencies | Used by |
 |---|---|---|---|
@@ -24,7 +24,11 @@ Every implementation passes the same conformance corpus and produces the same ca
 | Rust | [htmltrust-canonicalization/rust](https://github.com/HTMLTrust/htmltrust-canonicalization/tree/main/rust) | `html5ever` | Independent verifier and conformance checks |
 | Python | [htmltrust-canonicalization/python](https://github.com/HTMLTrust/htmltrust-canonicalization/tree/main/python) | `beautifulsoup4`, `lxml` | Independent verifier and conformance checks |
 
-The shared conformance suite covers all five language implementations and checks byte-identical output for the same input.
+{{< notice label="Read the independence claim carefully" >}}
+The five-port agreement is **dated evidence, not a description of current architecture.** It was measured at the v1 coordinated baseline: 128 shared fixtures across the five ports, plus a corpus study in which the ports jointly accepted 121 of 4,846 archived web records and produced matching digests for 119 of them.
+
+Development since then consolidates canonicalization on **one Rust core exposed through language bindings**, because five hand-maintained ports of a byte-exact algorithm is a permanent divergence risk rather than an ongoing feature. Once that lands, the ports stop being independent implementations and the interoperability result stays what it already is: historical evidence that the specification is precise enough to reimplement. Any claim on this page that the bindings are independently written should be read against its date.
+{{< /notice >}}
 
 ```js
 // JavaScript
@@ -50,7 +54,9 @@ A directory is optional infrastructure. Signature verification is local. A netwo
 
 **[htmltrust-browser-reference](https://github.com/HTMLTrust/htmltrust-browser-reference)**
 
-Chrome, Firefox, and Safari builds are available. Chromium-based browsers such as Edge use the Chrome build.
+Production bundles are built for Chrome, Firefox, and Safari, and each stays inside its store's size limit. Chromium-based browsers such as Edge use the Chrome build.
+
+Verification coverage is not equal across the three. A Chromium check loads the built MV3 extension and confirms a cryptographically valid, source-verified section through its service worker, so the Chrome build is exercised end to end as a packaged extension. The Firefox and Safari bundles are packaging targets: they build, they lint, and the verification lifecycle passes in Firefox and WebKit through the test harness, but neither is yet loaded and driven as an installed extension in automation. Treat them as usable and unproven rather than released.
 
 - Scans every page for `<signed-section>` elements
 - Canonicalizes and hashes locally without a network call
@@ -95,16 +101,17 @@ and verify its signature with the protocol rules.
 
 ## Status &amp; roadmap
 
-| Component | Status |
-|---|---|
-| Specification | ✅ Published |
-| Trust directory server | ✅ Reference implementation |
-| Browser extension (Chrome) | ✅ Available |
-| Browser extension (Firefox, Safari) | ✅ Available |
-| WordPress plugin | ✅ Available |
-| Hugo module | ✅ Available |
-| Canonicalization (JS, Go, PHP, Rust, Python) | ✅ Available, conformant |
-| W3C proposal | ⬜ Planned |
+| Component | Status | Basis |
+|---|---|---|
+| Canonicalization (JS, Go, PHP, Rust, Python) | Conformant | 128 shared fixtures, byte-identical across ports |
+| Trust directory server | Reference implementation | 103 tests, OpenAPI lint, 12 conformance fixtures, v1 smoke check |
+| Browser extension, Chrome | Verified as packaged | MV3 extension loaded and driven in Chromium automation |
+| Browser extension, Firefox and Safari | Builds, unproven | Bundles within size limits; not yet loaded as installed extensions |
+| WordPress plugin | Reference implementation | Signs in the editor with a browser-held key; verifies via the public key endpoint |
+| Hugo module | In production | Signs this site at build time |
+| IETF Internet-Draft | Pre-submission | Not posted to the datatracker |
+| W3C CG Report | Pre-submission | Not submitted to a Community Group |
+| Production adopter | None yet | Crawl-time verification is the next milestone |
 
 ## Open design questions
 
