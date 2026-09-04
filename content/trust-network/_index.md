@@ -2,7 +2,6 @@
 title: 'The trust network'
 description: 'How a reader assembles a trust decision from their own list, signed endorsements, and any number of federated directories, none of which is required to verify a signature.'
 date: 2026-09-03
-numbered: true
 htmltrust:
   sign: true
   claims:

@@ -1,10 +1,15 @@
 /* ==========================================================================
    HTMLTrust — stylesheet
-   Hand-written, no framework. One file, no build step beyond Hugo's minifier.
 
-   Design intent: a printed technical paper rendered in a browser. Serif text,
-   one column, hairline rules, no shadows, no rounded corners, no motion, no
-   JavaScript. Everything below is either structure, type, or a rule.
+   Plain documentation styling, in the manner of a specification site: white
+   background, near-black text, one accent colour for links, system sans-serif,
+   and generous line spacing. No gradients, no shadows, no rounded corners, no
+   letterspaced small caps, no decorative rules. Nothing here should look
+   designed; it should look like a document.
+
+   No JavaScript is loaded by any page except /search/. Anything that alters a
+   page after load also alters the DOM inside <signed-section>, and the
+   signature then describes content the reader never saw.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -12,41 +17,30 @@
    -------------------------------------------------------------------------- */
 
 :root {
-  /* Paper and ink */
-  --paper: #fbfaf5;
-  --paper-inset: #f3f1e9;
-  --ink: #16150f;
-  --ink-muted: #5a5748;
-  --ink-faint: #85806d;
+  --bg: #ffffff;
+  --bg-inset: #f6f6f6;
+  --text: #1b1b1b;
+  --text-muted: #565656;
+  --rule: #d8d8d8;
 
-  /* Rules: hairline for structure, strong for table and section boundaries */
-  --rule: #ccc7b4;
-  --rule-strong: #16150f;
+  /* The one accent. Links, and nothing else. */
+  --accent: #1a5fb4;
+  --accent-visited: #6c3fa0;
 
-  /* Links: navy, visited plum. Underlined, always. */
-  --link: #123a63;
-  --link-visited: #5c2a63;
-  --link-mark: #d8d2bd;
+  --notice-bg: #f7f4e8;
+  --notice-rule: #b8a45c;
 
-  /* Signals, used sparingly and never as the only cue */
-  --valid: #1d5c2f;
-  --invalid: #8c2018;
-  --notice: #6b4a05;
-  --notice-paper: #f7f0d8;
-
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
-    Georgia, "Times New Roman", Times, serif;
-  --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono",
     monospace;
 
-  /* 66 characters is the target measure for body text */
-  --measure: 34rem;
-  --measure-wide: 52rem;
+  --measure: 42rem;
+  --page: 54rem;
 }
 
 /* --------------------------------------------------------------------------
-   2. Reset and base
+   2. Base
    -------------------------------------------------------------------------- */
 
 *,
@@ -62,16 +56,13 @@ html {
 
 body {
   margin: 0;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--serif);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
   font-size: 1rem;
-  line-height: 1.58;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
+  line-height: 1.7;
 }
 
-/* Skip link: visible only when focused */
 .skip-link {
   position: absolute;
   left: -9999px;
@@ -80,34 +71,23 @@ body {
   left: 1rem;
   top: 0.5rem;
   z-index: 10;
-  background: var(--paper);
+  background: var(--bg);
   padding: 0.4rem 0.7rem;
-  border: 1px solid var(--rule-strong);
+  border: 1px solid var(--text);
 }
 
 :focus-visible {
-  outline: 2px solid var(--link);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-/* --------------------------------------------------------------------------
-   3. Page frame
-   -------------------------------------------------------------------------- */
-
 .page {
-  max-width: var(--measure-wide);
+  max-width: var(--page);
   margin: 0 auto;
-  padding: 0 1.5rem 4rem;
+  padding: 0 1.5rem 5rem;
 }
 
-/* Body copy holds the narrow measure. Tables, diagrams, figures and code get
-   the full column, because a 66-character line is right for prose and wrong
-   for a table.
-
-   The measure is applied to the text elements themselves rather than to the
-   children of .prose, because signed pages wrap their content in a
-   <signed-section> element. A rule written as `.prose > p` would match nothing
-   on exactly the pages that matter. */
+/* Text keeps a comfortable measure; tables, figures and code use the column. */
 .prose > signed-section {
   max-width: 100%;
 }
@@ -121,42 +101,36 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   4. Masthead and navigation
+   3. Masthead
    -------------------------------------------------------------------------- */
 
 .masthead {
-  border-bottom: 1px solid var(--rule-strong);
-  margin-bottom: 2rem;
-  padding-top: 1.75rem;
+  padding: 2rem 0 1.25rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--rule);
 }
 
 .masthead__title {
-  font-size: 1.9rem;
-  line-height: 1.1;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.3;
   margin: 0;
-  letter-spacing: 0.01em;
-  font-weight: 700;
 }
 
 .masthead__title a {
-  color: var(--ink);
+  color: var(--text);
   text-decoration: none;
-  background: none;
 }
 
 .masthead__tagline {
-  margin: 0.3rem 0 0;
-  color: var(--ink-muted);
+  margin: 0.2rem 0 0;
+  color: var(--text-muted);
   font-size: 0.95rem;
-  font-style: italic;
 }
 
 .nav {
-  margin: 1.1rem 0 0.9rem;
-  font-family: var(--sans);
-  font-size: 0.72rem;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
+  margin: 1.25rem 0 0;
+  font-size: 0.95rem;
 }
 
 .nav ul {
@@ -165,107 +139,63 @@ body {
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0 0.55rem;
+  gap: 0.35rem 1.35rem;
 }
 
 .nav a {
-  color: var(--ink-muted);
+  color: var(--accent);
   text-decoration: none;
-  background: none;
-  border-bottom: 1px solid transparent;
-  padding-bottom: 1px;
 }
 
 .nav a:hover,
 .nav a:focus {
-  color: var(--ink);
-  border-bottom-color: var(--ink);
+  text-decoration: underline;
 }
 
 .nav a[aria-current="page"] {
-  color: var(--ink);
-  border-bottom-color: var(--ink);
-}
-
-/* Separator trails each item rather than leading the next, so a nav that wraps
-   does not start a line with a stray middot. */
-.nav li:not(:last-child)::after {
-  content: "·";
-  color: var(--ink-faint);
-  margin-left: 0.55rem;
+  color: var(--text);
+  font-weight: 600;
 }
 
 /* --------------------------------------------------------------------------
-   5. Headings
+   4. Headings
    -------------------------------------------------------------------------- */
 
 h1,
 h2,
 h3,
-h4,
-h5,
-h6 {
-  font-family: var(--serif);
-  line-height: 1.22;
-  font-weight: 700;
-  text-wrap: balance;
+h4 {
+  font-family: var(--sans);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
 }
 
 h1 {
-  font-size: 2.1rem;
-  margin: 0 0 0.5rem;
-  letter-spacing: -0.005em;
+  font-size: 1.95rem;
+  margin: 0 0 0.6rem;
+  line-height: 1.2;
 }
 
 h2 {
-  font-size: 1.28rem;
-  margin: 2.6rem 0 0.7rem;
-  padding-top: 0.55rem;
-  border-top: 1px solid var(--rule);
+  font-size: 1.4rem;
+  margin: 3rem 0 0.9rem;
 }
 
 h3 {
-  font-size: 1.06rem;
-  margin: 1.9rem 0 0.45rem;
+  font-size: 1.12rem;
+  margin: 2.2rem 0 0.6rem;
 }
 
 h4 {
   font-size: 1rem;
-  font-weight: 400;
-  font-style: italic;
-  margin: 1.5rem 0 0.35rem;
+  margin: 1.8rem 0 0.5rem;
 }
 
-/* Numbered sections, opt-in per page via front matter `numbered: true`.
-   Reads like a paper: 1, 1.1, 1.1.1. */
-.numbered .prose {
-  counter-reset: h2;
-}
-.numbered .prose h2 {
-  counter-increment: h2;
-  counter-reset: h3;
-}
-.numbered .prose h2::before {
-  content: counter(h2) ".\2003";
-  color: var(--ink-faint);
-  font-weight: 400;
-}
-.numbered .prose h3 {
-  counter-increment: h3;
-  counter-reset: h4;
-}
-.numbered .prose h3::before {
-  content: counter(h2) "." counter(h3) "\2003";
-  color: var(--ink-faint);
-  font-weight: 400;
-}
-
-/* Anchor links on hover, in the margin where there is room */
 .heading-anchor {
   text-decoration: none;
-  background: none;
-  color: var(--ink-faint);
-  margin-left: 0.35rem;
+  color: var(--rule);
+  margin-left: 0.4rem;
   font-size: 0.8em;
   opacity: 0;
 }
@@ -276,213 +206,170 @@ h3:hover .heading-anchor,
 }
 
 /* --------------------------------------------------------------------------
-   6. Text elements
+   5. Text
    -------------------------------------------------------------------------- */
 
 p {
-  margin: 0 0 1.05rem;
+  margin: 0 0 1.3rem;
 }
 
 a {
-  color: var(--link);
+  color: var(--accent);
   text-decoration: underline;
-  text-decoration-color: var(--link-mark);
-  text-decoration-thickness: 1px;
   text-underline-offset: 2px;
 }
 
 a:visited {
-  color: var(--link-visited);
-}
-
-a:hover,
-a:focus {
-  text-decoration-color: currentColor;
+  color: var(--accent-visited);
 }
 
 strong {
-  font-weight: 700;
-}
-
-em {
-  font-style: italic;
-}
-
-small {
-  font-size: 0.86em;
-}
-
-abbr[title] {
-  text-decoration: underline dotted;
-  cursor: help;
+  font-weight: 600;
 }
 
 hr {
   border: 0;
   border-top: 1px solid var(--rule);
-  margin: 2.4rem 0;
+  margin: 3rem 0;
 }
 
 ul,
 ol {
-  margin: 0 0 1.05rem;
-  padding-left: 1.4rem;
+  margin: 0 0 1.3rem;
+  padding-left: 1.5rem;
 }
 
 li {
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.5rem;
 }
 
 li > ul,
 li > ol {
-  margin-top: 0.3rem;
-  margin-bottom: 0.3rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 dl {
-  margin: 0 0 1.05rem;
+  margin: 0 0 1.3rem;
 }
 
 dt {
-  font-weight: 700;
-  margin-top: 0.9rem;
+  font-weight: 600;
+  margin-top: 1rem;
 }
 
 dd {
-  margin: 0.15rem 0 0;
-  padding-left: 1.1rem;
-  border-left: 1px solid var(--rule);
+  margin: 0.2rem 0 0;
+  padding-left: 1.2rem;
 }
 
 blockquote {
-  margin: 1.4rem 0;
-  padding: 0 0 0 1.1rem;
-  border-left: 2px solid var(--rule);
-  color: var(--ink-muted);
+  margin: 1.6rem 0;
+  padding: 0 0 0 1.2rem;
+  border-left: 3px solid var(--rule);
+  color: var(--text-muted);
 }
 
 blockquote > :last-child {
   margin-bottom: 0;
 }
 
-sup,
-sub {
-  line-height: 0;
-}
-
-/* Footnotes, as Goldmark emits them */
 .footnotes {
-  margin-top: 3rem;
-  padding-top: 0.8rem;
-  border-top: 1px solid var(--rule-strong);
-  font-size: 0.9rem;
-  color: var(--ink-muted);
+  margin-top: 3.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.92rem;
+  color: var(--text-muted);
 }
 
 /* --------------------------------------------------------------------------
-   7. Code
+   6. Code
    -------------------------------------------------------------------------- */
 
 code,
 kbd,
 samp {
   font-family: var(--mono);
-  font-size: 0.86em;
+  font-size: 0.88em;
 }
 
-/* Inline code: bordered, so it reads as a token rather than emphasis */
 :not(pre) > code {
-  background: var(--paper-inset);
-  border: 1px solid var(--rule);
-  padding: 0.05em 0.28em;
-  white-space: nowrap;
+  background: var(--bg-inset);
+  padding: 0.1em 0.3em;
 }
 
 pre {
-  background: var(--paper-inset);
-  border: 1px solid var(--rule);
-  border-left: 2px solid var(--ink-faint);
-  padding: 0.85rem 1rem;
-  margin: 1.4rem 0;
+  background: var(--bg-inset);
+  padding: 1rem 1.1rem;
+  margin: 1.6rem 0;
   overflow-x: auto;
-  font-size: 0.84rem;
-  line-height: 1.5;
+  font-size: 0.86rem;
+  line-height: 1.55;
 }
 
 pre code {
   background: none;
-  border: 0;
   padding: 0;
   font-size: 1em;
   white-space: pre;
 }
 
-/* Hugo's Chroma wrapper */
 .highlight {
-  margin: 1.4rem 0;
+  margin: 1.6rem 0;
 }
 .highlight pre {
   margin: 0;
 }
 
 /* --------------------------------------------------------------------------
-   8. Figures and static diagrams
+   7. Figures and diagrams
    -------------------------------------------------------------------------- */
 
 figure {
-  margin: 1.8rem 0;
+  margin: 2rem 0;
 }
 
 figure img {
   display: block;
   max-width: 100%;
   height: auto;
-  border: 1px solid var(--rule);
 }
 
 figcaption {
-  margin-top: 0.5rem;
-  font-size: 0.86rem;
-  color: var(--ink-muted);
+  margin-top: 0.6rem;
+  font-size: 0.92rem;
+  color: var(--text-muted);
   max-width: var(--measure);
 }
 
-figcaption .figcaption__label {
-  font-family: var(--sans);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
+.figcaption__label {
+  font-weight: 600;
+  color: var(--text);
   margin-right: 0.4rem;
 }
 
-/* ASCII diagrams. Monospace, no syntax colouring, scrolls on narrow screens.
-   These are plain text on purpose: nothing to execute, nothing to mutate the
-   DOM after load, and they survive being copied into an email. */
+/* Plain-text diagrams: in the HTML the signer hashed, so nothing redraws them
+   after load. */
 pre.diagram {
-  background: var(--paper);
-  border: 1px solid var(--rule);
-  border-left: 1px solid var(--rule);
-  font-size: 0.78rem;
-  line-height: 1.35;
-  padding: 1rem 1.1rem;
+  background: var(--bg-inset);
+  font-size: 0.8rem;
+  line-height: 1.4;
   white-space: pre;
 }
 
 /* --------------------------------------------------------------------------
-   9. Tables — booktabs: horizontal rules only
+   8. Tables
    -------------------------------------------------------------------------- */
 
 .table-scroll {
   overflow-x: auto;
-  margin: 1.6rem 0;
+  margin: 1.8rem 0;
 }
 
 table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 0.9rem;
-  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
 }
 
 .table-scroll table {
@@ -490,22 +377,17 @@ table {
 }
 
 thead th {
-  border-top: 2px solid var(--rule-strong);
-  border-bottom: 1px solid var(--rule-strong);
+  border-bottom: 2px solid var(--rule);
   text-align: left;
-  font-weight: 700;
-  padding: 0.45rem 0.7rem 0.4rem 0;
+  font-weight: 600;
+  padding: 0.6rem 1rem 0.6rem 0;
   vertical-align: bottom;
 }
 
 tbody td {
   border-bottom: 1px solid var(--rule);
-  padding: 0.42rem 0.7rem 0.42rem 0;
+  padding: 0.6rem 1rem 0.6rem 0;
   vertical-align: top;
-}
-
-tbody tr:last-child td {
-  border-bottom: 2px solid var(--rule-strong);
 }
 
 th:last-child,
@@ -516,65 +398,48 @@ td:last-child {
 caption {
   caption-side: top;
   text-align: left;
-  font-size: 0.86rem;
-  color: var(--ink-muted);
-  padding-bottom: 0.5rem;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  padding-bottom: 0.6rem;
 }
 
 /* --------------------------------------------------------------------------
-   10. Home page
+   9. Home page
    -------------------------------------------------------------------------- */
 
 .hero {
-  margin: 0 0 2.4rem;
+  margin: 0 0 3rem;
 }
 
 .hero__lede {
-  font-size: 1.22rem;
-  line-height: 1.45;
-  max-width: 38rem;
-  margin: 0 0 1.1rem;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  max-width: var(--measure);
+  margin: 0 0 1.2rem;
 }
 
 .hero__lede--second {
-  font-size: 1.05rem;
-  color: var(--ink-muted);
-  max-width: 38rem;
-  margin: 0 0 1.3rem;
+  font-size: 1rem;
+  color: var(--text-muted);
+  max-width: var(--measure);
+  margin: 0 0 1.5rem;
 }
 
 .hero__actions {
-  font-family: var(--sans);
-  font-size: 0.8rem;
-  letter-spacing: 0.04em;
+  font-size: 0.98rem;
 }
 
 .hero__actions a {
-  display: inline-block;
-  border: 1px solid var(--rule-strong);
-  padding: 0.4rem 0.9rem;
-  margin: 0 0.5rem 0.5rem 0;
-  text-decoration: none;
-  color: var(--ink);
-  background: none;
+  margin-right: 1.5rem;
 }
 
-.hero__actions a:hover,
-.hero__actions a:focus {
-  background: var(--ink);
-  color: var(--paper);
-}
-
-/* Fact row under the hero: numbers with labels, no cards */
 .facts {
   list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-  gap: 1.2rem;
-  margin: 0 0 2.6rem;
-  padding: 1rem 0;
-  border-top: 2px solid var(--rule-strong);
-  border-bottom: 2px solid var(--rule-strong);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5rem;
+  margin: 0 0 3rem;
+  padding: 0;
   max-width: 100%;
 }
 
@@ -584,52 +449,32 @@ caption {
 
 .facts__value {
   display: block;
-  font-size: 1.7rem;
-  line-height: 1;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .facts__label {
   display: block;
-  font-family: var(--sans);
-  font-size: 0.7rem;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-  margin-top: 0.35rem;
+  font-size: 0.92rem;
+  color: var(--text-muted);
 }
 
-/* Two-column definition grid, used for principles and scope lists */
 .grid-defs {
   max-width: 100%;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  gap: 0 2.2rem;
-}
-
-.grid-defs dt {
-  margin-top: 1.1rem;
-}
-
-.grid-defs dd {
-  border-left: 0;
-  padding-left: 0;
-  color: var(--ink-muted);
-  font-size: 0.94rem;
 }
 
 /* --------------------------------------------------------------------------
-   11. Notices
+   10. Notices
    -------------------------------------------------------------------------- */
 
 .notice {
   max-width: var(--measure);
   margin: 0 0 2rem;
-  padding: 0.9rem 1.1rem;
-  background: var(--notice-paper);
-  border: 1px solid var(--notice);
-  border-left-width: 3px;
-  font-size: 0.92rem;
+  padding: 1rem 1.2rem;
+  background: var(--notice-bg);
+  border-left: 3px solid var(--notice-rule);
+  font-size: 0.96rem;
 }
 
 .notice > :last-child {
@@ -638,36 +483,28 @@ caption {
 
 .notice__label {
   display: block;
-  font-family: var(--sans);
-  font-size: 0.7rem;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--notice);
-  margin-bottom: 0.4rem;
-  font-weight: 700;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 
 /* --------------------------------------------------------------------------
-   12. Article metadata, table of contents, page lists
+   11. Page furniture
    -------------------------------------------------------------------------- */
 
 .page-header {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .page-header__description {
-  font-size: 1.08rem;
-  color: var(--ink-muted);
+  font-size: 1.1rem;
+  color: var(--text-muted);
   max-width: var(--measure);
-  margin: 0.4rem 0 0;
+  margin: 0.5rem 0 0;
 }
 
 .byline {
-  font-family: var(--sans);
-  font-size: 0.74rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
+  font-size: 0.92rem;
+  color: var(--text-muted);
   margin: 0.8rem 0 0;
 }
 
@@ -677,19 +514,14 @@ caption {
 
 .toc {
   max-width: var(--measure);
-  margin: 0 0 2.4rem;
-  padding: 0.9rem 0;
-  border-top: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
-  font-size: 0.9rem;
+  margin: 0 0 3rem;
+  padding: 1.1rem 1.2rem;
+  background: var(--bg-inset);
+  font-size: 0.95rem;
 }
 
 .toc__label {
-  font-family: var(--sans);
-  font-size: 0.7rem;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
+  font-weight: 600;
   margin: 0 0 0.5rem;
 }
 
@@ -700,15 +532,13 @@ caption {
 }
 
 .toc ul ul {
-  padding-left: 1.1rem;
+  padding-left: 1.2rem;
 }
 
 .toc li {
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.3rem;
 }
 
-/* No underlines in the contents list: a dozen underlined lines in a row reads
-   as a block of noise rather than as a list of links. */
 .toc a {
   text-decoration: none;
 }
@@ -716,163 +546,128 @@ caption {
 .toc a:hover,
 .toc a:focus {
   text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
 }
 
-/* Section index, e.g. the blog list */
 .entries {
   list-style: none;
   padding: 0;
-  margin: 2rem 0 0;
+  margin: 2.5rem 0 0;
   max-width: var(--measure);
 }
 
 .entries li {
-  padding-bottom: 1.2rem;
-  margin-bottom: 1.2rem;
+  padding-bottom: 1.8rem;
+  margin-bottom: 1.8rem;
   border-bottom: 1px solid var(--rule);
 }
 
 .entries h2 {
-  border-top: 0;
-  padding-top: 0;
-  margin: 0 0 0.25rem;
-  font-size: 1.12rem;
+  margin: 0 0 0.35rem;
+  font-size: 1.2rem;
 }
 
 .entries__meta {
-  font-family: var(--sans);
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  margin: 0 0 0.35rem;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  margin: 0 0 0.4rem;
 }
 
 .entries__summary {
   margin: 0;
-  color: var(--ink-muted);
-  font-size: 0.95rem;
+  color: var(--text-muted);
 }
 
 .page-nav {
-  margin-top: 3rem;
-  padding-top: 0.9rem;
+  margin-top: 3.5rem;
+  padding-top: 1.1rem;
   border-top: 1px solid var(--rule);
-  font-size: 0.92rem;
   max-width: var(--measure);
 }
 
-/* Search page */
+/* Search */
 .search {
   max-width: var(--measure);
-  margin: 1.6rem 0 0.8rem;
+  margin: 1.8rem 0 1rem;
 }
 
 .search__label {
   display: block;
-  font-family: var(--sans);
-  font-size: 0.7rem;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  margin-bottom: 0.4rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 
 .search input[type="search"] {
   width: 100%;
-  font-family: var(--serif);
-  font-size: 1.05rem;
-  color: var(--ink);
-  background: var(--paper);
-  border: 1px solid var(--rule-strong);
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--text-muted);
   border-radius: 0;
-  padding: 0.5rem 0.6rem;
+  padding: 0.6rem 0.7rem;
   -webkit-appearance: none;
   appearance: none;
 }
 
 .search__status {
   max-width: var(--measure);
-  font-family: var(--sans);
-  font-size: 0.74rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  min-height: 1.2em;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  min-height: 1.4em;
   margin: 0;
 }
 
 #search-results mark {
-  background: var(--notice-paper);
-  color: var(--ink);
-  font-weight: 700;
-  padding: 0 0.1em;
+  background: var(--notice-bg);
+  color: var(--text);
+  font-weight: 600;
 }
 
 /* --------------------------------------------------------------------------
-   13. Signed sections
+   12. Signed sections
    -------------------------------------------------------------------------- */
 
-/* <signed-section> is an unknown element to the browser; give it block flow.
-   No decoration: nothing here may depend on JavaScript, and nothing may
-   inject nodes into the signed subtree after load, or the content hash the
-   signer computed no longer matches the live DOM. */
 signed-section {
   display: block;
 }
 
 /* --------------------------------------------------------------------------
-   14. Footer
+   13. Footer
    -------------------------------------------------------------------------- */
 
 .site-footer {
-  margin-top: 4rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--rule-strong);
-  font-size: 0.86rem;
-  color: var(--ink-muted);
+  margin-top: 5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.92rem;
+  color: var(--text-muted);
 }
 
 .site-footer p {
-  margin: 0 0 0.4rem;
-  max-width: var(--measure-wide);
+  margin: 0 0 0.5rem;
+  max-width: var(--page);
 }
 
 /* --------------------------------------------------------------------------
-   15. Dark mode
-   Same layout and type, inverted ink. Opt-out of nothing: readers who set a
-   dark system theme get a dark page.
+   14. Dark mode
    -------------------------------------------------------------------------- */
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #16150f;
-    --paper-inset: #22201a;
-    --ink: #eae6d9;
-    --ink-muted: #a9a493;
-    --ink-faint: #837e6d;
-    --rule: #3c392f;
-    --rule-strong: #6d6857;
-    --link: #9dc0e8;
-    --link-visited: #c6a6d4;
-    --link-mark: #4a4738;
-    --valid: #7fc98f;
-    --invalid: #e58f86;
-    --notice: #d9b95c;
-    --notice-paper: #2a2517;
-  }
-
-  .hero__actions a:hover,
-  .hero__actions a:focus {
-    background: var(--ink);
-    color: var(--paper);
+    --bg: #16181a;
+    --bg-inset: #22252a;
+    --text: #e6e6e6;
+    --text-muted: #a3a3a3;
+    --rule: #3a3d42;
+    --accent: #83b3f0;
+    --accent-visited: #c4a5e0;
+    --notice-bg: #2a2618;
+    --notice-rule: #9c8a4a;
   }
 }
 
 /* --------------------------------------------------------------------------
-   16. Small screens
+   15. Small screens
    -------------------------------------------------------------------------- */
 
 @media (max-width: 34rem) {
@@ -880,31 +675,33 @@ signed-section {
     font-size: 16px;
   }
   .page {
-    padding: 0 1.1rem 3rem;
+    padding: 0 1.1rem 3.5rem;
   }
   h1 {
-    font-size: 1.7rem;
+    font-size: 1.6rem;
   }
-  .hero__lede {
-    font-size: 1.1rem;
+  h2 {
+    font-size: 1.25rem;
+    margin-top: 2.4rem;
+  }
+  .facts {
+    gap: 1.5rem;
   }
 }
 
 /* --------------------------------------------------------------------------
-   17. Print
+   16. Print
    -------------------------------------------------------------------------- */
 
 @media print {
   :root {
-    --paper: #fff;
-    --paper-inset: #fff;
-    --ink: #000;
-    --ink-muted: #333;
-    --ink-faint: #555;
+    --bg: #fff;
+    --bg-inset: #fff;
+    --text: #000;
+    --text-muted: #333;
     --rule: #bbb;
-    --rule-strong: #000;
-    --link: #000;
-    --link-visited: #000;
+    --accent: #000;
+    --accent-visited: #000;
   }
 
   html {
@@ -926,14 +723,6 @@ signed-section {
 
   a {
     text-decoration: none;
-  }
-
-  /* Print the target of external links, the way a paper cites a URL */
-  .prose a[href^="http"]::after {
-    content: " <" attr(href) ">";
-    font-family: var(--mono);
-    font-size: 0.8em;
-    word-break: break-all;
   }
 
   h2,
