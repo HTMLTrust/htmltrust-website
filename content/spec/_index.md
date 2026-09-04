@@ -1,6 +1,6 @@
 ---
 title: 'The HTMLTrust spec'
-description: 'One new HTML element, four required attributes, an 8-phase canonicalization algorithm, and a federation model.'
+description: 'One new HTML element, four required attributes, a four-step text normalization, and a federation model.'
 date: 2026-05-13
 htmltrust:
   sign: true
@@ -89,7 +89,7 @@ Given the inner content of a `<signed-section>` element, produce a single UTF-8 
 5. **Insert a single `\n` after boundary-producing elements** (`<article>`, `<section>`, `<p>`, `<h1>`–`<h6>`, `<ul>`, `<ol>`, `<li>`, `<blockquote>`, `<pre>`, `<div>`, `<table>`, `<tr>`, …) so paragraph and list structure survives extraction.
 6. **`<br>` produces a single `\n`.**
 7. **Inline elements** (`<a>`, `<em>`, `<strong>`, `<code>`, `<span>`, …) **introduce no separator** beyond any signed attribute records.
-8. **Apply Stage 2 (the 8 phases below)** to text and signed attribute values.
+8. **Apply Stage 2 (the four `normalize_text` steps below)** to text and signed attribute values.
 
 The output of Stage 1 is a single canonical string consisting of readable words, signed attribute records, and `\n` block boundaries. The intent: two different HTML serializations of the same signed semantics should produce the same Stage 1 output.
 
