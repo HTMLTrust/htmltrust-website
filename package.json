@@ -10,11 +10,7 @@
     "pagefind": "pagefind --site public"
   },
   "dependencies": {
-    "@tailwindcss/cli": "^4.1.12",
-    "@tailwindcss/typography": "^0.5.10",
-    "pagefind": "^1.4.0",
-    "preact": "^10.27.2",
-    "tailwindcss": "^4.1.12"
+    "pagefind": "^1.4.0"
   },
   "license": "CC-BY-NC-ND-4.0"
 }

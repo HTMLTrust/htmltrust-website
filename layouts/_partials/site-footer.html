@@ -1,0 +1,14 @@
+{{- /* site-footer.html */ -}}
+{{- $name := site.Params.identity.name | default "HTMLTrust" -}}
+<footer class="site-footer">
+  {{- with site.Params.footer.text }}
+  <p>{{ . | safeHTML }}</p>
+  {{- end }}
+  {{- with site.Params.copyright.notice }}
+  <p>{{ . | safeHTML }}</p>
+  {{- end }}
+  {{- with site.Params.trademark.notice }}
+  <p>{{ . | safeHTML }}</p>
+  {{- end }}
+  <p>Pages marked as signed carry a <code>&lt;signed-section&gt;</code> element with an Ed25519 signature over their canonical text. See <a href="{{ "/spec/" | relURL }}">the spec</a> for how to check one.</p>
+</footer>

@@ -38,13 +38,16 @@ jobs:
           extended: true
 
       - name: Setup Go
-        # Required by Hugo Modules to fetch the Hugo Blox theme on first build.
+        # Required by Hugo Modules to fetch the htmltrust-hugo module, which
+        # supplies the signing partial.
         uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version: "1.25"
 
       - name: Setup Node.js
-        # Hugo Blox needs preact + tailwindcss + pagefind at build time.
+        # Only pagefind, which builds the search index after Hugo runs. The
+        # site has no theme and no CSS or JS toolchain: layouts and the single
+        # stylesheet are in this repository and Hugo handles them alone.
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: "22"
@@ -52,16 +55,12 @@ jobs:
       - name: Install npm deps
         # `npm ci` installs the exact tree in package-lock.json instead of
         # re-resolving semver ranges on every run. --ignore-scripts blocks
-        # dependency lifecycle hooks; the platform binaries this build needs
-        # (@tailwindcss/oxide, @pagefind/linux-x64, @parcel/watcher) all arrive
-        # as optional dependencies. Postinstall browser downloads stay disabled.
+        # dependency lifecycle hooks; the one platform binary this build needs
+        # (@pagefind/linux-x64) arrives as an optional dependency.
         run: npm ci --ignore-scripts
 
       - name: Build site
-        # node_modules/.bin must be on PATH so the tailwindcss CLI resolves.
-        run: |
-          export PATH="$PWD/node_modules/.bin:$PATH"
-          hugo --minify
+        run: hugo --minify
 
       - name: Build search index
         run: npx pagefind --site public
@@ -70,9 +69,12 @@ jobs:
         # Hugo emits <signed-section> placeholders with data-htmltrust-placeholder
         # markers on every page that opts in via `htmltrust.sign: true` front-matter.
         # The signer (the `sign` job) will replace them with real content-hash / signature
-        # / keyid / algorithm attributes. Six content pages currently opt in:
-        # /spec/, /architecture/, /implementation/, /use-cases/, /faq/,
-        # /blog/paper-published/.
+        # / keyid / algorithm attributes. Ten pages currently opt in: /,
+        # /spec/, /spec/ietf-draft/, /spec/w3c-cg/, /trust-network/,
+        # /architecture/, /implementation/, /use-cases/, /faq/, and
+        # /blog/paper-published/. The floor below is deliberately lower than
+        # that count so adding or retiring one page does not fail the build;
+        # it exists to catch the signing opt-in breaking wholesale.
         run: |
           count=$(grep -rl '<signed-section' public/ | wc -l)
           echo "Found $count pages with <signed-section> placeholders"

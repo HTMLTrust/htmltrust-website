@@ -1,0 +1,15 @@
+{{- /*
+toc.html — table of contents.
+
+Shown when the page has more than three H2 sections and has not set
+`toc: false`. Hugo builds the list at compile time; there is no scroll
+tracking and no JavaScript.
+*/ -}}
+{{- /* .Fragments.Headings is a single synthetic root whose children are the
+     real headings, so count .Fragments.Identifiers instead. */ -}}
+{{- if and (ne .Params.toc false) (gt (len .Fragments.Identifiers) 3) }}
+<nav class="toc" aria-labelledby="toc-label">
+  <p class="toc__label" id="toc-label">Contents</p>
+  {{ .TableOfContents }}
+</nav>
+{{- end }}

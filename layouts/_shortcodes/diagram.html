@@ -1,0 +1,29 @@
+{{- /*
+diagram.html — a static monospace diagram with a caption.
+
+    {{< diagram label="Figure 1" alt="short description for screen readers" caption="Caption." >}}
+    ...plain-text diagram...
+    {{< /diagram >}}
+
+Why plain text rather than a diagram library: anything that renders a diagram
+in the browser inserts nodes into the page after load. On a page that opts into
+signing, those nodes land inside <signed-section> and the live DOM stops
+matching the content hash the signer computed, which is the runtime-mutation
+failure the FAQ warns publishers about. A <pre> block is in the HTML the signer
+saw, so it stays verifiable.
+
+Shortcode bodies bypass the markdown block parser, so blank lines inside the
+diagram are safe. The body is HTML-escaped, so `<`, `>` and `&` can be used
+freely in arrows without being read as markup.
+*/ -}}
+<figure>
+<pre class="diagram"{{ with .Get "alt" }} role="img" aria-label="{{ . }}"{{ end }}>{{ .Inner | transform.HTMLEscape | safeHTML }}</pre>
+{{- $label := .Get "label" -}}
+{{- $caption := .Get "caption" -}}
+{{- if or $label $caption }}
+<figcaption>
+  {{- with $label }}<span class="figcaption__label">{{ . }}</span>{{ end -}}
+  {{- with $caption }}{{ . | markdownify }}{{ end -}}
+</figcaption>
+{{- end }}
+</figure>

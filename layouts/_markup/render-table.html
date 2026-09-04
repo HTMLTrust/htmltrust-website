@@ -1,0 +1,30 @@
+{{- /*
+render-table.html — wraps markdown tables so wide ones scroll inside their own
+box instead of forcing the page to scroll sideways. Styling is booktabs:
+horizontal rules only.
+*/ -}}
+<div class="table-scroll">
+  <table>
+    {{- with .Attributes.caption }}
+    <caption>{{ . | safeHTML }}</caption>
+    {{- end }}
+    <thead>
+      {{- range .THead }}
+      <tr>
+        {{- range . }}
+        <th{{ with .Alignment }} style="text-align: {{ . }}"{{ end }}>{{ .Text }}</th>
+        {{- end }}
+      </tr>
+      {{- end }}
+    </thead>
+    <tbody>
+      {{- range .TBody }}
+      <tr>
+        {{- range . }}
+        <td{{ with .Alignment }} style="text-align: {{ . }}"{{ end }}>{{ .Text }}</td>
+        {{- end }}
+      </tr>
+      {{- end }}
+    </tbody>
+  </table>
+</div>

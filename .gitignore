@@ -10,7 +10,7 @@ hugo_stats.json
 # Hugo lock file
 .hugo_build.lock
 
-# Node dependencies used by Hugo Blox, Tailwind, and Pagefind
+# Node dependencies (Pagefind, for the search index)
 node_modules/
 
 # Editor files

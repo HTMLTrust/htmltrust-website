@@ -1,0 +1,44 @@
+{{- /*
+head.html — document head.
+
+No external requests: fonts are system stacks, the stylesheet is inlined into
+the build as a fingerprinted local asset, and there is no analytics or tag
+manager. A page about verifiable content should not need third-party script.
+*/ -}}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+{{- $siteName := site.Params.identity.name | default "HTMLTrust" -}}
+{{- $title := cond .IsHome $siteName (printf "%s — %s" .Title $siteName) -}}
+<title>{{ $title }}</title>
+
+{{- $description := .Description | default .Summary | default site.Params.identity.description -}}
+{{- with $description }}
+<meta name="description" content="{{ . | plainify | truncate 300 }}">
+{{- end }}
+
+<link rel="canonical" href="{{ .Permalink }}">
+
+{{- /* Open Graph, so a shared link is legible. Nothing loaded from remote. */ -}}
+<meta property="og:type" content="{{ cond .IsPage "article" "website" }}">
+<meta property="og:title" content="{{ cond .IsHome $siteName .Title }}">
+{{- with $description }}
+<meta property="og:description" content="{{ . | plainify | truncate 300 }}">
+{{- end }}
+<meta property="og:url" content="{{ .Permalink }}">
+<meta property="og:site_name" content="{{ $siteName }}">
+
+{{- with resources.Get "css/main.css" }}
+  {{- $css := . | minify | fingerprint -}}
+  <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+{{- end }}
+
+{{- with resources.Get "media/icon.png" }}
+  {{- $icon := .Resize "180x180 png" -}}
+  <link rel="icon" href="{{ $icon.RelPermalink }}" type="image/png">
+  <link rel="apple-touch-icon" href="{{ $icon.RelPermalink }}">
+{{- end }}
+
+{{- range .AlternativeOutputFormats }}
+  <link rel="{{ .Rel }}" type="{{ .MediaType.Type }}" href="{{ .Permalink }}" title="{{ $siteName }}">
+{{- end }}

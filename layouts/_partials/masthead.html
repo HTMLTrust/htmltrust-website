@@ -1,0 +1,20 @@
+{{- /* masthead.html — site title, tagline, and the one navigation bar. */ -}}
+<header class="masthead">
+  <p class="masthead__title"><a href="{{ "/" | relURL }}">{{ site.Params.identity.name | default "HTMLTrust" }}</a></p>
+  {{- with site.Params.identity.tagline }}
+  <p class="masthead__tagline">{{ . }}</p>
+  {{- end }}
+
+  <nav class="nav" aria-label="Main">
+    <ul>
+      {{- $page := . -}}
+      {{- range site.Menus.main }}
+        {{- $active := or ($page.IsMenuCurrent "main" .) ($page.HasMenuCurrent "main" .) -}}
+        <li><a href="{{ .URL | relURL }}"{{ if $active }} aria-current="page"{{ end }}>{{ .Name }}</a></li>
+      {{- end }}
+      {{- range site.Menus.sidebar }}
+        <li><a href="{{ .URL }}"{{ if strings.HasPrefix .URL "http" }} rel="noopener"{{ end }}>{{ .Name }}</a></li>
+      {{- end }}
+    </ul>
+  </nav>
+</header>

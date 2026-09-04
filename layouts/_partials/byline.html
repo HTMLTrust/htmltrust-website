@@ -1,0 +1,43 @@
+{{- /*
+byline.html — date and authors.
+
+Authors are read straight from data/authors/<slug>.yaml. An author may set
+`external_url` to link their name off-site; there are no author profile pages
+on this site.
+*/ -}}
+{{- $parts := slice -}}
+
+{{- if and (not .Date.IsZero) (ne .Params.show_date false) -}}
+  {{- $date := printf `<time datetime="%s">%s</time>` (.Date.Format "2006-01-02") (.Date.Format (site.Params.locale.date_format | default "2 January 2006")) -}}
+  {{- $parts = $parts | append $date -}}
+{{- end -}}
+
+{{- with .Params.authors -}}
+  {{- $names := slice -}}
+  {{- range . -}}
+    {{- $slug := . | urlize -}}
+    {{- with index hugo.Data.authors $slug -}}
+      {{- $display := .name.display | default $slug -}}
+      {{- with .external_url -}}
+        {{- $names = $names | append (printf `<a href="%s" rel="author noopener">%s</a>` . $display) -}}
+      {{- else -}}
+        {{- $names = $names | append $display -}}
+      {{- end -}}
+    {{- else -}}
+      {{- $names = $names | append . -}}
+    {{- end -}}
+  {{- end -}}
+  {{- with $names -}}
+    {{- $parts = $parts | append (delimit . ", " " and ") -}}
+  {{- end -}}
+{{- end -}}
+
+{{- with .Params.htmltrust -}}
+  {{- if .sign -}}
+    {{- $parts = $parts | append "Signed" -}}
+  {{- end -}}
+{{- end -}}
+
+{{- with $parts }}
+<p class="byline">{{ delimit . " · " | safeHTML }}</p>
+{{- end }}

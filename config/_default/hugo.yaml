@@ -1,10 +1,7 @@
 # Configuration of Hugo
-# Guide: https://docs.hugoblox.com/tutorial/
-# Hugo Documentation: https://gohugo.io/getting-started/configuration/#all-configuration-settings
-# This file is formatted using YAML syntax - learn more at https://learnxinyminutes.com/docs/yaml/
+# Hugo Documentation: https://gohugo.io/getting-started/configuration/
 
-# Website name (set in params.yaml under hugoblox.branding.name)
-title: ''
+title: 'HTMLTrust'
 baseURL: 'https://www.htmltrust.org/' # Website URL
 
 ############################
@@ -12,32 +9,11 @@ baseURL: 'https://www.htmltrust.org/' # Website URL
 ############################
 
 cascade:
-  # Docs folder options
-  - target:
-      path: /docs/**
-    editable: true
-    show_breadcrumb: true
-    # Hide date from Next In Series
-    show_date: false
-    # Show date modified at end of content
-    show_date_updated: true
   # Blog post options
   - target:
       path: /blog/**
       kind: page
-    pager: true
-    editable: true
     show_date: true
-    show_date_updated: true
-    reading_time: true
-    commentable: true
-    show_related: true
-    share: true
-    # Just use Breadcrumb for navigation on blog post pages?
-    show_breadcrumb: false
-    header:
-      navbar:
-        enable: true
 
 ############################
 ## LANGUAGE
@@ -49,49 +25,74 @@ defaultContentLanguageInSubdir: false
 removePathAccents: true
 
 ############################
+## MARKUP
+## These were previously inherited from the Hugo Blox modules. They are set
+## explicitly now that the site has no theme.
+############################
+
+markup:
+  goldmark:
+    renderer:
+      # Content pages embed raw HTML (the canonicalization demo on
+      # /implementation/ ships a <script> tag). Goldmark drops raw HTML unless
+      # this is on.
+      unsafe: true
+    parser:
+      wrapStandAloneImageWithinParagraph: false
+      attribute:
+        block: true
+        title: true
+    extensions:
+      typographer:
+        # Leave quotes and dashes as authored. This site is about canonical
+        # text: silently rewriting an apostrophe into a curly quote changes
+        # what gets hashed, and the examples on /spec/ discuss those exact
+        # characters.
+        disable: true
+      footnote: true
+      table: true
+  tableOfContents:
+    startLevel: 2
+    endLevel: 3
+    ordered: false
+  highlight:
+    # Chroma highlights at build time, so no syntax-highlighting JavaScript
+    # ships to the reader. `bw` is weight and slant only, no colour, which is
+    # how code is set in print. noClasses keeps it self-contained: no separate
+    # chroma stylesheet to keep in sync.
+    noClasses: true
+    style: bw
+    lineNos: false
+    tabWidth: 2
+    wrapperClass: highlight
+
+############################
+## OUTPUTS
+############################
+
+outputs:
+  home: [HTML, RSS]
+  page: [HTML]
+  section: [HTML, RSS]
+
+############################
 ## ADVANCED
 ############################
 
-build:
-  writeStats: true
 enableGitInfo: false
 summaryLength: 30
 pagination:
-  pagerSize: 10
+  pagerSize: 20
 enableEmoji: true
 enableRobotsTXT: true
-footnotereturnlinkcontents: <sup>^</sup>
-ignoreFiles: [".ipynb_checkpoints$", "\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
 enableInlineShortcodes: true
 disableAliases: true
-outputs:
-  home: [HTML, RSS, WebAppManifest, headers, redirects, backlinks]
-  page: [HTML]
-  section: [HTML, RSS]
+ignoreFiles: [".ipynb_checkpoints$", "\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
+
 imaging:
   resampleFilter: lanczos
   quality: 90
   anchor: smart
-  hint: picture
-timeout: 600000
+
 taxonomies:
   tag: tags
-  category: categories
-  author: authors
-markup:
-  _merge: deep
-related:
-  threshold: 80
-  includeNewer: true
-  toLower: true
-  indices:
-    - name: tags
-      weight: 100
-    - name: categories
-      weight: 70
-security:
-  _merge: deep
-sitemap:
-  _merge: deep
-minify:
-  _merge: deep

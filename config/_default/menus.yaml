@@ -5,24 +5,32 @@ main:
   - name: Spec
     url: /spec/
     weight: 20
+  - name: Trust network
+    url: /trust-network/
+    weight: 30
   - name: Architecture
     url: /architecture/
-    weight: 30
+    weight: 40
   - name: Implementation
     url: /implementation/
-    weight: 40
-  - name: Use Cases
-    url: /use-cases/
     weight: 50
+  - name: Use cases
+    url: /use-cases/
+    weight: 60
   - name: FAQ
     url: /faq/
-    weight: 60
+    weight: 70
   - name: Blog
     url: /blog/
-    weight: 70
+    weight: 80
 
+# Rendered after the main menu.
 sidebar:
+  - identifier: search
+    name: "Search"
+    url: /search/
+    weight: 0
   - identifier: github
-    name: "GitHub ↗"
+    name: "GitHub"
     url: "https://github.com/HTMLTrust"
     weight: 1
