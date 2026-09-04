@@ -34,8 +34,8 @@ facts:
     label: 'New HTML element'
   - value: '4'
     label: 'Required attributes'
-  - value: '8'
-    label: 'Canonicalization phases'
+  - value: '4'
+    label: 'Normalization steps'
   - value: '0'
     label: 'Central authorities'
 ---
