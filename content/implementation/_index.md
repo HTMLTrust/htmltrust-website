@@ -10,24 +10,28 @@ htmltrust:
     ai-assistance: 'Human+AI'
 ---
 
-Reference implementations exist for every layer of the system and live under the [HTMLTrust GitHub organization](https://github.com/HTMLTrust). Each repository states its own license.
+Reference implementations exist for every layer of the system and live under the [HTMLTrust GitHub organization](https://github.com/HTMLTrust). The code is Apache-2.0, which includes an express patent grant, so implementing the protocol needs no permission and carries no patent surprise. The specification and this site are CC BY 4.0. Using the *name* has one condition, described in the [trademark policy](/trademark/).
 
 ## Canonicalization libraries
 
-Five language ports were written independently against the specification, and produced byte-identical canonical output on a shared conformance corpus. That result is the reason the algorithm is specifiable at all: it demonstrates that the written rules are complete enough for separate implementers to agree on the bytes, rather than agreeing because they shared code.
+**Current release: [v0.3.0](https://github.com/HTMLTrust/htmltrust-canonicalization/releases/tag/v0.3.0).** One Rust implementation of the algorithm, reached from five languages. Every binding calls the same core, so there is exactly one place where canonical bytes are decided.
 
-| Language | Repo | Dependencies | Used by |
-|---|---|---|---|
-| JavaScript | [htmltrust-canonicalization/javascript](https://github.com/HTMLTrust/htmltrust-canonicalization/tree/main/javascript) | None (browser + Node) | Browser extension, Hugo signing script |
-| Go | [htmltrust-canonicalization/go](https://github.com/HTMLTrust/htmltrust-canonicalization/tree/main/go) | `golang.org/x/text` (NFKC) | Hugo module |
-| PHP | [htmltrust-canonicalization/php](https://github.com/HTMLTrust/htmltrust-canonicalization/tree/main/php) | `ext-intl`, `ext-mbstring` | WordPress plugin |
-| Rust | [htmltrust-canonicalization/rust](https://github.com/HTMLTrust/htmltrust-canonicalization/tree/main/rust) | `html5ever` | Independent verifier and conformance checks |
-| Python | [htmltrust-canonicalization/python](https://github.com/HTMLTrust/htmltrust-canonicalization/tree/main/python) | `beautifulsoup4`, `lxml` | Independent verifier and conformance checks |
+| Language | Binds via | Notes |
+|---|---|---|
+| Rust | native | The core itself |
+| Go | C ABI | Loads the shared library by explicit absolute path |
+| JavaScript | WebAssembly and native | Published from the repository root as `@htmltrust/canonicalization` |
+| Python | C ABI | |
+| PHP | C ABI | Used by the WordPress plugin |
+
+The core is built and run-linked for Linux, macOS and Windows on AMD64 and ARM64, with Linux and Windows i686 as compatibility lanes, plus Android libraries for all four NDK ABIs and an iOS device and simulator XCFramework. Those artifacts are unsigned and retained for review: signing, notarization, Maven and SwiftPM publication, and mobile runtime testing are still ahead.
+
+The conformance suite is 130 fixtures at v0.3.0 and remains the definition of correct behaviour. It is also the bar in the [trademark policy](/trademark/): pass it and you may use the name.
 
 {{< notice label="Read the independence claim carefully" >}}
-The five-port agreement is **dated evidence, not a description of current architecture.** It was measured at the v1 coordinated baseline: 128 shared fixtures across the five ports, plus a corpus study in which the ports jointly accepted 121 of 4,846 archived web records and produced matching digests for 119 of them.
+The five-port agreement is **dated evidence, not a description of current architecture.** It was measured at the v1 coordinated baseline, before v0.3.0: 128 shared fixtures across the five ports, plus a corpus study in which the ports jointly accepted 121 of 4,846 archived web records and produced matching digests for 119 of them.
 
-Development since then consolidates canonicalization on **one Rust core exposed through language bindings**, because five hand-maintained ports of a byte-exact algorithm is a permanent divergence risk rather than an ongoing feature. Once that lands, the ports stop being independent implementations and the interoperability result stays what it already is: historical evidence that the specification is precise enough to reimplement. Any claim on this page that the bindings are independently written should be read against its date.
+**That consolidation landed in v0.3.0 on 3 September 2026.** The bindings are no longer independent implementations, because five hand-maintained ports of a byte-exact algorithm is a permanent divergence risk rather than an ongoing feature. The interoperability result stays exactly what it was: historical evidence that the written specification is precise enough for separate people to reimplement and agree on the bytes. That is the property a standard needs, and it is why the result is worth preserving rather than quietly restating as though the current code proved it.
 {{< /notice >}}
 
 ```js
@@ -103,7 +107,8 @@ and verify its signature with the protocol rules.
 
 | Component | Status | Basis |
 |---|---|---|
-| Canonicalization (JS, Go, PHP, Rust, Python) | Conformant | 128 shared fixtures, byte-identical across ports |
+| Canonicalization core and bindings | Released, v0.3.0 | 130 conformance fixtures; 11-job platform artifact matrix green |
+| Platform artifacts (desktop, Android, Apple) | Built, unsigned | Compile and smoke-tested in CI; no device or emulator runtime tests yet |
 | Trust directory server | Reference implementation | 103 tests, OpenAPI lint, 12 conformance fixtures, v1 smoke check |
 | Browser extension, Chrome | Verified as packaged | MV3 extension loaded and driven in Chromium automation |
 | Browser extension, Firefox and Safari | Builds, unproven | Bundles within size limits; not yet loaded as installed extensions |
@@ -111,6 +116,7 @@ and verify its signature with the protocol rules.
 | Hugo module | In production | Signs this site at build time |
 | IETF Internet-Draft | Pre-submission | Not posted to the datatracker |
 | W3C CG Report | Pre-submission | Not submitted to a Community Group |
+| Downstream consumers on v0.3.0 | In migration | The extension, WordPress plugin, Hugo signer and E2E harness still build against the pre-v0.3.0 core |
 | Production adopter | None yet | Crawl-time verification is the next milestone |
 
 ## Open design questions
